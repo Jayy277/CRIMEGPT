@@ -24,6 +24,10 @@ const officerSchema = new mongoose.Schema(
       required: [true, 'Contact number is required'],
       trim: true,
     },
+    profilePicture: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

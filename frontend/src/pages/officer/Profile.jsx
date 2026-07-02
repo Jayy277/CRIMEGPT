@@ -1,74 +1,172 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import axiosInstance from '../../api/axiosInstance';
 
 const Profile = () => {
-  const { user, details } = useContext(AuthContext);
+  const { user, details, setDetails } = useContext(AuthContext);
+  const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate size (e.g. 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size exceeds 5MB limit.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setUploading(true);
+    try {
+      const res = await axiosInstance.post('/auth/profile-picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data && res.data.success) {
+        setDetails(res.data.details);
+        localStorage.setItem('crimegpt_details', JSON.stringify(res.data.details));
+        alert('Profile picture uploaded successfully.');
+      }
+    } catch (err) {
+      console.error('Error uploading profile picture:', err);
+      alert(err.response?.data?.message || 'Failed to upload profile picture.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeletePicture = async () => {
+    if (!window.confirm('Are you sure you want to delete your profile picture?')) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const res = await axiosInstance.delete('/auth/profile-picture');
+      if (res.data && res.data.success) {
+        setDetails(res.data.details);
+        localStorage.setItem('crimegpt_details', JSON.stringify(res.data.details));
+        alert('Profile picture deleted successfully.');
+      }
+    } catch (err) {
+      console.error('Error deleting profile picture:', err);
+      alert(err.response?.data?.message || 'Failed to delete profile picture.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: '28px', fontFamily: 'Outfit, sans-serif', color: '#fff' }}>
-          Officer Profile
+        <h1 style={{ fontSize: '28px', fontFamily: 'Space Grotesk, sans-serif', color: '#fff' }}>
+          Officer Profile Workspace
         </h1>
         <p style={{ color: '#94a3b8', fontSize: '14px' }}>
-          Your verified credentials and jurisdiction mapping.
+          Your verified credentials, profile badge, and jurisdictional mapping.
         </p>
       </div>
 
       {/* Profile Card */}
-      <div className="glass-card" style={{ padding: '32px', borderTop: '4px solid #f59e0b' }}>
+      <div className="glass-card" style={{ padding: '32px', borderTop: '4px solid var(--theme-accent, #3B82F6)' }}>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '28px', paddingBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            backgroundColor: '#f59e0b',
-            color: '#fff',
-            fontSize: '24px',
-            fontWeight: '800',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 16px rgba(245,158,11,0.3)'
-          }}>
-            {user?.name?.charAt(0).toUpperCase()}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '28px', paddingBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
+          
+          {/* Avatar Picture or Initials */}
+          {details?.profilePicture ? (
+            <img
+              src={`http://localhost:5000${details.profilePicture}`}
+              alt="Officer Profile"
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '2px solid var(--theme-accent, #3B82F6)',
+                boxShadow: '0 0 16px var(--theme-accent-glow, rgba(59, 130, 246, 0.3))'
+              }}
+            />
+          ) : (
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--theme-accent, #3B82F6)',
+              color: '#fff',
+              fontSize: '28px',
+              fontWeight: '800',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 16px rgba(59, 130, 246, 0.3)'
+            }}>
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+          )}
+
           <div>
-            <h2 style={{ fontSize: '20px', color: '#fff', fontFamily: 'Outfit, sans-serif', margin: 0 }}>
+            <h2 style={{ fontSize: '22px', color: '#fff', fontFamily: 'Space Grotesk, sans-serif', margin: 0 }}>
               {user?.name}
             </h2>
-            <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '12px', color: 'var(--theme-accent, #3B82F6)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Field Squad Officer
             </span>
+
+            {/* Profile Action Buttons */}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+              <label className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
+                {uploading ? 'Uploading...' : 'Upload Photo'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                  disabled={uploading}
+                />
+              </label>
+              {details?.profilePicture && (
+                <button
+                  type="button"
+                  onClick={handleDeletePicture}
+                  disabled={deleting}
+                  className="btn btn-crimson"
+                  style={{ padding: '6px 12px', fontSize: '12px' }}
+                >
+                  {deleting ? 'Deleting...' : 'Delete'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Email */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '12px' }}>
             <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '600' }}>Email Address:</span>
             <span style={{ color: '#f8fafc', fontSize: '14px' }}>{user?.email}</span>
           </div>
 
           {/* Badge Number */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '12px' }}>
             <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '600' }}>Badge Number:</span>
-            <span style={{ color: '#f8fafc', fontSize: '14px', fontFamily: 'monospace', fontWeight: '700', color: '#f59e0b' }}>
+            <span style={{ color: 'var(--theme-accent, #3B82F6)', fontSize: '14px', fontFamily: 'JetBrains Mono, monospace', fontWeight: '700' }}>
               {details?.badgeNo || 'N/A'}
             </span>
           </div>
 
           {/* Contact */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '12px' }}>
             <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '600' }}>Contact Phone:</span>
             <span style={{ color: '#f8fafc', fontSize: '14px' }}>{details?.contact || 'N/A'}</span>
           </div>
 
           {/* Police Station / Jurisdiction */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '600' }}>Assigned Station:</span>
             <div>
               <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700' }}>
@@ -83,9 +181,9 @@ const Profile = () => {
           </div>
 
           {/* System Status */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
-            <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '600' }}>System Status:</span>
-            <span style={{ color: '#10b981', fontSize: '13px', fontWeight: '700', textTransform: 'uppercase' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '12px' }}>
+            <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '600' }}>System Access Status:</span>
+            <span style={{ color: '#22C55E', fontSize: '13px', fontWeight: '700', textTransform: 'uppercase' }}>
               ✓ ACTIVE SECURE ROOT
             </span>
           </div>

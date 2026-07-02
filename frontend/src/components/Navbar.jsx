@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, details } = useContext(AuthContext);
 
   const getRoleTheme = () => {
     if (!user) return {};
@@ -85,22 +85,37 @@ const Navbar = () => {
               </span>
             </div>
             
-            {/* User Avatar */}
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              backgroundColor: theme.color || '#334155',
-              color: '#fff',
-              fontWeight: '700',
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: `0 0 10px ${theme.color}22`
-            }}>
-              {user.name.charAt(0).toUpperCase()}
-            </div>
+            {/* User Avatar - Conditional rendering of picture */}
+            {details?.profilePicture ? (
+              <img
+                src={`http://localhost:5000${details.profilePicture}`}
+                alt="Profile"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: `1px solid ${theme.color || '#334155'}`,
+                  boxShadow: `0 0 10px ${theme.color}22`
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundColor: theme.color || '#334155',
+                color: '#fff',
+                fontWeight: '700',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: `0 0 10px ${theme.color}22`
+              }}>
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            )}
 
             {/* Logout button */}
             <button

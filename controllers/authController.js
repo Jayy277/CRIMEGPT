@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
 const User = require('../models/User');
 const Officer = require('../models/Officer');
 const Analyst = require('../models/Analyst');
@@ -217,6 +219,77 @@ exports.resetPassword = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Password reset successful',
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Upload profile picture for Officer
+// @route   POST /api/auth/profile-picture
+// @access  Private/Officer
+exports.uploadProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Please upload a valid image file' });
+    }
+
+    const officer = await Officer.findOne({ user: req.user.id });
+    if (!officer) {
+      return res.status(404).json({ success: false, message: 'Officer profile not found' });
+    }
+
+    // Delete old profile picture if exists
+    if (officer.profilePicture) {
+      const oldPath = path.join(__dirname, '../', officer.profilePicture);
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    // Save new profile picture path
+    officer.profilePicture = `/uploads/${req.file.filename}`;
+    await officer.save();
+
+    const populatedOfficer = await Officer.findById(officer._id).populate('station');
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile picture uploaded successfully',
+      details: populatedOfficer
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Delete profile picture for Officer
+// @route   DELETE /api/auth/profile-picture
+// @access  Private/Officer
+exports.deleteProfilePicture = async (req, res) => {
+  try {
+    const officer = await Officer.findOne({ user: req.user.id });
+    if (!officer) {
+      return res.status(404).json({ success: false, message: 'Officer profile not found' });
+    }
+
+    // Delete file from disk
+    if (officer.profilePicture) {
+      const filePath = path.join(__dirname, '../', officer.profilePicture);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    officer.profilePicture = '';
+    await officer.save();
+
+    const populatedOfficer = await Officer.findById(officer._id).populate('station');
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile picture deleted successfully',
+      details: populatedOfficer
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

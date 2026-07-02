@@ -1,6 +1,7 @@
 const express = require('express');
-const { login, signup, forgotPassword, resetPassword } = require('../controllers/authController');
+const { login, signup, forgotPassword, resetPassword, uploadProfilePicture, deleteProfilePicture } = require('../controllers/authController');
 const { protect, restrictTo } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
@@ -10,5 +11,9 @@ router.post('/reset-password/:token', resetPassword);
 
 // Only admins can signup/register officers/analysts
 router.post('/signup', protect, restrictTo('admin'), signup);
+
+// Profile Picture operations for officers
+router.post('/profile-picture', protect, restrictTo('officer'), upload.single('file'), uploadProfilePicture);
+router.delete('/profile-picture', protect, restrictTo('officer'), deleteProfilePicture);
 
 module.exports = router;
