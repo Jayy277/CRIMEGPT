@@ -38,7 +38,7 @@ const Reports = () => {
 
     try {
       const params = new URLSearchParams();
-      params.append('format', 'pdf');
+      params.append('fileFormat', 'pdf');
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
       if (priority) params.append('priority', priority);

@@ -263,11 +263,11 @@ const ManageUsers = () => {
               </div>
               <div className="form-group">
                 <label>Email Address *</label>
-                <input type="email" required placeholder="email@crimegpt.com" className="form-control" value={email} onChange={e => setEmail(e.target.value)} />
+                <input type="email" required placeholder="email@crimegpt.com" autoComplete="new-email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
               <div className="form-group">
                 <label>Default Password *</label>
-                <input type="password" required placeholder="••••••••" className="form-control" value={password} onChange={e => setPassword(e.target.value)} />
+                <input type="password" required placeholder="••••••••" autoComplete="new-password" className="form-control" value={password} onChange={e => setPassword(e.target.value)} />
               </div>
             </div>
 

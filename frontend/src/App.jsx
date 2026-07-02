@@ -82,6 +82,7 @@ function App() {
             <Route path="heatmap" element={<Heatmap />} />
             <Route path="reports" element={<AnalystReports />} />
             <Route path="prediction" element={<PredictionPlaceholder />} />
+            <Route path="profile" element={<OfficerProfile />} />
             <Route path="cases/:id" element={<OfficerCrimeDetails />} /> {/* Reused CrimeDetails */}
           </Route>
 
@@ -102,6 +103,7 @@ function App() {
             <Route path="locations" element={<Locations />} />
             <Route path="logs" element={<SystemLogs />} />
             <Route path="reports" element={<AdminReports />} />
+            <Route path="profile" element={<OfficerProfile />} />
             <Route path="cases/:id" element={<OfficerCrimeDetails />} /> {/* Reused CrimeDetails */}
           </Route>
 

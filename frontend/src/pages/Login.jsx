@@ -95,6 +95,7 @@ const Login = () => {
             <input
               type="text"
               placeholder="e.g. admin@crimegpt.com"
+              autoComplete="off"
               className="form-control"
               value={usernameOrEmail}
               onChange={(e) => setUsernameOrEmail(e.target.value)}
@@ -108,6 +109,7 @@ const Login = () => {
             <input
               type="password"
               placeholder="••••••••"
+              autoComplete="new-password"
               className="form-control"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

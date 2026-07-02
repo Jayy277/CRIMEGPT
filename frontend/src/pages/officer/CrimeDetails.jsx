@@ -107,7 +107,6 @@ const CrimeDetails = () => {
       const res = await axiosInstance.patch(`/crimes/${id}/status`, { status: targetStatus });
       if (res.data && res.data.success) {
         setCrime(prev => ({ ...prev, status: res.data.crime.status }));
-        alert(`Case status progressed to: ${targetStatus}`);
       }
     } catch (err) {
       console.error('Error changing case status:', err);
@@ -125,7 +124,6 @@ const CrimeDetails = () => {
       const res = await axiosInstance.patch(`/crimes/${id}/close-solved`, { status: targetStatus });
       if (res.data && res.data.success) {
         setCrime(prev => ({ ...prev, status: res.data.crime.status }));
-        alert(`Case marked as ${targetStatus} successfully.`);
       }
     } catch (err) {
       console.error('Error closing/solving case:', err);
@@ -148,7 +146,6 @@ const CrimeDetails = () => {
         setSuspects(prev => [res.data.suspect, ...prev]);
         setSuspectForm({ name: '', age: '', gender: 'Male', address: '', status: 'Suspect' });
         setShowSuspectForm(false);
-        alert('Suspect profile logged successfully.');
       }
     } catch (err) {
       console.error('Error adding suspect:', err);
@@ -171,7 +168,6 @@ const CrimeDetails = () => {
         setVictims(prev => [res.data.victim, ...prev]);
         setVictimForm({ name: '', contact: '', statement: '', evidenceReference: '' });
         setShowVictimForm(false);
-        alert('Victim/Witness statement added.');
       }
     } catch (err) {
       console.error('Error adding victim:', err);
@@ -213,7 +209,6 @@ const CrimeDetails = () => {
         setEvidence(newEvRes.data.evidence || []);
         setEvidenceForm({ type: '', description: '', collectionDate: new Date().toISOString().substring(0, 10), file: null });
         setShowEvidenceForm(false);
-        alert('Evidence record filed securely.');
       }
     } catch (err) {
       console.error('Error adding evidence:', err);

@@ -86,9 +86,9 @@ const Navbar = () => {
             </div>
             
             {/* User Avatar - Conditional rendering of picture */}
-            {details?.profilePicture ? (
+            {user?.profilePicture || details?.profilePicture ? (
               <img
-                src={`http://localhost:5000${details.profilePicture}`}
+                src={`http://localhost:5000${user.profilePicture || details.profilePicture}`}
                 alt="Profile"
                 style={{
                   width: '36px',
