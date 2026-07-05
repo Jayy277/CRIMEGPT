@@ -527,23 +527,21 @@ const Login = () => {
       >
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #06b6d4, #e11d48)',
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '800',
-            fontSize: '24px',
-            color: '#fff',
-            margin: '0 auto 12px',
-            boxShadow: '0 0 20px rgba(6,182,212,0.3)'
-          }}>
-            C
-          </div>
-          <h2 style={{ fontSize: '24px', color: '#fff', fontFamily: 'Outfit, sans-serif' }}>Access CrimeGPT</h2>
+          <img
+            src="/assets/logo.webp"
+            alt="CrimePilot Logo"
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '10px',
+              objectFit: 'cover',
+              margin: '0 auto 12px',
+              display: 'block',
+              boxShadow: '0 0 10px rgba(6,182,212,0.3)',
+              border: '1.5px solid rgba(6, 182, 212, 0.3)'
+            }}
+          />
+          <h2 style={{ fontSize: '24px', color: '#fff', fontFamily: 'Outfit, sans-serif' }}>Access CrimePilot</h2>
           <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Enter credentials to access secure terminal</p>
         </div>
 
@@ -566,7 +564,7 @@ const Login = () => {
             <label>Username or Email Address</label>
             <input
               type="text"
-              placeholder="e.g. admin@crimegpt.com"
+              placeholder="e.g. admin@crimepilot.com"
               autoComplete="off"
               className="form-control"
               value={usernameOrEmail}

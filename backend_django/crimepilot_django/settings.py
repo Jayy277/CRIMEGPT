@@ -8,7 +8,7 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-crimegpt-key-2026-xyz')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-crimepilot-key-2026-xyz')
 
 DEBUG = True
 
@@ -48,7 +48,7 @@ MIDDLEWARE = [
   'logs.middleware.AuditLoggerMiddleware',
 ]
 
-ROOT_URLCONF = 'crimegpt_django.urls'
+ROOT_URLCONF = 'crimepilot_django.urls'
 
 TEMPLATES = [
   {
@@ -66,7 +66,7 @@ TEMPLATES = [
   },
 ]
 
-WSGI_APPLICATION = 'crimegpt_django.wsgi.application'
+WSGI_APPLICATION = 'crimepilot_django.wsgi.application'
 
 # Database configuration (Option A: SQLite database)
 DATABASES = {
@@ -118,7 +118,7 @@ SIMPLE_JWT = {
   'ROTATE_REFRESH_TOKENS': False,
   'BLACKLIST_AFTER_ROTATION': False,
   'ALGORITHM': 'HS256',
-  'SIGNING_KEY': os.environ.get('JWT_SECRET', 'crimegpt_super_jwt_secret_key_2026'),
+  'SIGNING_KEY': os.environ.get('JWT_SECRET', 'crimepilot_super_jwt_secret_key_2026'),
   'VERIFYING_KEY': None,
   'AUTH_HEADER_TYPES': ('Bearer',),
   'USER_ID_FIELD': 'id',

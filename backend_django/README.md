@@ -1,6 +1,6 @@
-# CrimeGPT — Django REST Framework (DRF) Backend
+# CrimePilot — Django REST Framework (DRF) Backend
 
-This is the Python + Django + Django REST Framework backend for **CrimeGPT**, transitioned from the Node.js/Express version. It is configured to run on a local SQLite database (SQL Option A) and exposes the exact same API envelope structure and JWT claims to ensure 100% compatibility with the React frontend.
+This is the Python + Django + Django REST Framework backend for **CrimePilot**, transitioned from the Node.js/Express version. It is configured to run on a local SQLite database (SQL Option A) and exposes the exact same API envelope structure and JWT claims to ensure 100% compatibility with the React frontend.
 
 ---
 
@@ -11,15 +11,15 @@ This is the Python + Django + Django REST Framework backend for **CrimeGPT**, tr
 
 2. **Navigate to the Backend Directory and Install Python Packages**
    ```bash
-   cd J:\CrimeGPT\backend_django
+   cd J:\CrimePilot\backend_django
    pip install django djangorestframework djangorestframework-simplejwt django-cors-headers reportlab python-dotenv
    ```
 
 3. **Configure Environment Variables**
    The application uses environment settings from the project root. If needed, you can create a `.env` file inside `backend_django/` containing:
    ```env
-   DJANGO_SECRET_KEY=django-insecure-crimegpt-key-2026-xyz
-   JWT_SECRET=crimegpt_super_jwt_secret_key_2026
+   DJANGO_SECRET_KEY=django-insecure-crimepilot-key-2026-xyz
+   JWT_SECRET=crimepilot_super_jwt_secret_key_2026
    ```
 
 4. **Apply Database Migrations**
@@ -35,7 +35,7 @@ This is the Python + Django + Django REST Framework backend for **CrimeGPT**, tr
    python manage.py seed_db
    ```
    **Default Admin Credentials:**
-   - **Email:** `admin@crimegpt.com`
+   - **Email:** `admin@crimepilot.com`
    - **Password:** `Admin@123`
 
 6. **Start the Development Server**

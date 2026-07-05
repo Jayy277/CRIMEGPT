@@ -54,7 +54,7 @@ const Reports = () => {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.setAttribute('download', `CrimeGPT-FIR-Report-${Date.now()}.pdf`);
+      link.setAttribute('download', `CrimePilot-FIR-Report-${Date.now()}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();

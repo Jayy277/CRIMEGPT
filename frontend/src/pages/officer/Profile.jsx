@@ -27,11 +27,11 @@ const Profile = () => {
       if (res.data && res.data.success) {
         if (res.data.details) {
           setDetails(res.data.details);
-          localStorage.setItem('crimegpt_details', JSON.stringify(res.data.details));
+          localStorage.setItem('crimepilot_details', JSON.stringify(res.data.details));
         }
         if (res.data.user) {
           setUser(res.data.user);
-          localStorage.setItem('crimegpt_user', JSON.stringify(res.data.user));
+          localStorage.setItem('crimepilot_user', JSON.stringify(res.data.user));
         }
       }
     } catch (err) {
@@ -53,11 +53,11 @@ const Profile = () => {
       if (res.data && res.data.success) {
         if (res.data.details) {
           setDetails(res.data.details);
-          localStorage.setItem('crimegpt_details', JSON.stringify(res.data.details));
+          localStorage.setItem('crimepilot_details', JSON.stringify(res.data.details));
         }
         if (res.data.user) {
           setUser(res.data.user);
-          localStorage.setItem('crimegpt_user', JSON.stringify(res.data.user));
+          localStorage.setItem('crimepilot_user', JSON.stringify(res.data.user));
         }
       }
     } catch (err) {

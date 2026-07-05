@@ -98,7 +98,7 @@ const Logs = () => {
             <input
               type="text"
               className="form-control"
-              placeholder="e.g. officer@crimegpt.com"
+              placeholder="e.g. officer@crimepilot.com"
               value={emailSearch}
               onChange={e => setEmailSearch(e.target.value)}
             />

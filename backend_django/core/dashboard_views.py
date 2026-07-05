@@ -161,7 +161,7 @@ class ReportView(APIView):
     # Return PDF format download
     if report_format == 'pdf':
       response = HttpResponse(content_type='application/pdf')
-      response['Content-Disposition'] = f'attachment; filename="CrimeGPT-Report-{int(datetime.datetime.now().timestamp())}.pdf"'
+      response['Content-Disposition'] = f'attachment; filename="CrimePilot-Report-{int(datetime.datetime.now().timestamp())}.pdf"'
       
       generate_report_pdf(
         response,

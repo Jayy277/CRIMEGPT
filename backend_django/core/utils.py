@@ -38,7 +38,7 @@ def generate_report_pdf(response, title, subtitle, data, date_range):
     spaceAfter=15
   )
   
-  story.append(Paragraph("CrimeGPT — Case Compiler Report", title_style))
+  story.append(Paragraph("CrimePilot — Case Compiler Report", title_style))
   story.append(Paragraph(f"Generated on: {timezone_now_str()} | filter criteria: {title}", meta_style))
   if date_range:
     story.append(Paragraph(f"Report Period: {date_range}", meta_style))

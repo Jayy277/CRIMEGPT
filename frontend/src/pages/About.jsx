@@ -22,7 +22,7 @@ const About = () => {
             WebkitTextFillColor: 'transparent',
             marginBottom: '12px'
           }}>
-            About CrimeGPT Portal
+            About CrimePilot Portal
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '15px', maxWidth: '600px', margin: '0 auto' }}>
             Next-generation Crime Management and Modus Operandi Intelligence System for modern law enforcement agencies.
@@ -34,7 +34,7 @@ const About = () => {
             Mission & Architecture
           </h2>
           <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', marginBottom: '20px' }}>
-            CrimeGPT is an end-to-end digitised case registration and analytical system designed in accordance with current judicial framework structures. It allows local field squads, analytical units, and system supervisors to collaborate instantly on active cases, suspect records, and evidence management.
+            CrimePilot is an end-to-end digitised case registration and analytical system designed in accordance with current judicial framework structures. It allows local field squads, analytical units, and system supervisors to collaborate instantly on active cases, suspect records, and evidence management.
           </p>
           
           <div style={{

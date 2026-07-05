@@ -11,9 +11,9 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Restore session on load
-    const storedToken = localStorage.getItem('crimegpt_token');
-    const storedUser = localStorage.getItem('crimegpt_user');
-    const storedDetails = localStorage.getItem('crimegpt_details');
+    const storedToken = localStorage.getItem('crimepilot_token');
+    const storedUser = localStorage.getItem('crimepilot_user');
+    const storedDetails = localStorage.getItem('crimepilot_details');
 
     if (storedToken && storedUser) {
       setToken(storedToken);
@@ -40,12 +40,12 @@ export const AuthProvider = ({ children }) => {
       setDetails(userDetails);
 
       // Save to localStorage
-      localStorage.setItem('crimegpt_token', jwtToken);
-      localStorage.setItem('crimegpt_user', JSON.stringify(userData));
+      localStorage.setItem('crimepilot_token', jwtToken);
+      localStorage.setItem('crimepilot_user', JSON.stringify(userData));
       if (userDetails) {
-        localStorage.setItem('crimegpt_details', JSON.stringify(userDetails));
+        localStorage.setItem('crimepilot_details', JSON.stringify(userDetails));
       } else {
-        localStorage.removeItem('crimegpt_details');
+        localStorage.removeItem('crimepilot_details');
       }
 
       return { success: true, role: userData.role };
@@ -59,9 +59,9 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setDetails(null);
-    localStorage.removeItem('crimegpt_token');
-    localStorage.removeItem('crimegpt_user');
-    localStorage.removeItem('crimegpt_details');
+    localStorage.removeItem('crimepilot_token');
+    localStorage.removeItem('crimepilot_user');
+    localStorage.removeItem('crimepilot_details');
   };
 
   const refreshProfile = async () => {
@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
         // If there's new data about the officer/analyst profile, refresh it
         if (response.data && response.data.details) {
           setDetails(response.data.details);
-          localStorage.setItem('crimegpt_details', JSON.stringify(response.data.details));
+          localStorage.setItem('crimepilot_details', JSON.stringify(response.data.details));
         }
       }
     } catch (err) {

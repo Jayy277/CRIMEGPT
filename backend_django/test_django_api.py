@@ -66,7 +66,7 @@ def run_tests():
     # Test 1: Admin login
     log("Test 1: Admin Login...")
     status_code, res = request('/auth/login', 'POST', {
-      'usernameOrEmail': 'admin@crimegpt.com',
+      'usernameOrEmail': 'admin@crimepilot.com',
       'password': 'admin@1234'
     })
     
@@ -102,7 +102,7 @@ def run_tests():
     log("Test 5: Creating a Police Officer user...")
     status_code, res = request('/auth/signup', 'POST', headers={'Authorization': f"Bearer {admin_token}"}, data={
       'name': 'Officer Django',
-      'email': f'officer.django.{int(time.time())}@crimegpt.com',
+      'email': f'officer.django.{int(time.time())}@crimepilot.com',
       'password': 'Officer@123',
       'role': 'officer',
       'badgeNo': f"BADGE-{int(time.time()) % 10000}",

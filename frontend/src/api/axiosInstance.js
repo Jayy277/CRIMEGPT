@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 // Request Interceptor: Inject JWT token from localStorage
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('crimegpt_token');
+    const token = localStorage.getItem('crimepilot_token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -27,9 +27,9 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // Clear session
-      localStorage.removeItem('crimegpt_token');
-      localStorage.removeItem('crimegpt_user');
-      localStorage.removeItem('crimegpt_details');
+      localStorage.removeItem('crimepilot_token');
+      localStorage.removeItem('crimepilot_user');
+      localStorage.removeItem('crimepilot_details');
       
       // Redirect to login only if not already on the login page
       if (window.location.pathname !== '/login') {

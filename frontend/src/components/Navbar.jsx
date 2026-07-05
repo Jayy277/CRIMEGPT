@@ -31,24 +31,21 @@ const Navbar = ({ toggleSidebar }) => {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {/* CrimeGPT brand logo & title */}
-        <div style={{
-          background: 'linear-gradient(135deg, #06b6d4, #e11d48)',
-          width: '32px',
-          height: '32px',
-          borderRadius: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: '800',
-          fontSize: '16px',
-          color: '#fff',
-          boxShadow: '0 0 16px rgba(6,182,212,0.3)'
-        }}>
-          C
-        </div>
+        {/* CrimePilot brand logo & title */}
+        <img
+          src="/assets/logo.webp"
+          alt="CrimePilot Logo"
+          style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '6px',
+            objectFit: 'cover',
+            boxShadow: '0 0 8px rgba(6,182,212,0.25)',
+            border: '1px solid rgba(6, 182, 212, 0.25)'
+          }}
+        />
         <span style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'Outfit, sans-serif', background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          CrimeGPT
+          CrimePilot
         </span>
 
         {/* Sidebar Toggle Button */}

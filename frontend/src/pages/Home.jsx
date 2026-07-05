@@ -54,7 +54,7 @@ const Home = () => {
           margin: '0 auto 36px',
           lineHeight: '1.6'
         }}>
-          CrimeGPT matches case modalities, tracks suspects through active judicial categories (BNS/BNSS/BSA), and generates aggregated intelligence reports for administrative, analyst, and field squads.
+          CrimePilot matches case modalities, tracks suspects through active judicial categories (BNS/BNSS/BSA), and generates aggregated intelligence reports for administrative, analyst, and field squads.
         </p>
 
         {/* CTA Buttons */}
