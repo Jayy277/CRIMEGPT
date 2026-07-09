@@ -46,6 +46,13 @@ const CitizenRegister = () => {
       return;
     }
 
+    const emailLower = email.toLowerCase();
+    if (emailLower.endsWith('@field.crimepilot.com') || emailLower.endsWith('@intel.crimepilot.com') || emailLower.endsWith('@command.crimepilot.com')) {
+      setError('Internal department email domains cannot be used to register public citizen accounts.');
+      return;
+    }
+
+
     setLoading(true);
     setError('');
     setSuccess('');

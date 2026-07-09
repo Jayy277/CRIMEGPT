@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
+import { renderDepartmentBadge } from '../../api/departmentHelper';
 
 const ManageOfficers = () => {
   const [officers, setOfficers] = useState([]);
@@ -116,6 +117,7 @@ const ManageOfficers = () => {
                       </td>
                       <td style={{ fontWeight: '700', color: '#fff' }}>
                         {officer.user?.name || 'Staff Officer'}
+                        <div style={{ marginTop: '4px' }}>{officer.user?.email && renderDepartmentBadge(officer.user.email)}</div>
                       </td>
                       <td>{officer.contact || 'N/A'}</td>
                       <td>

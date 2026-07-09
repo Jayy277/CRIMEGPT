@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
+import { renderDepartmentBadge } from '../../api/departmentHelper';
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -96,6 +97,24 @@ const ManageUsers = () => {
     setSubmitting(true);
     setError('');
     setSuccess('');
+
+    // Domain validation checks
+    const emailLower = email.toLowerCase();
+    if (role === 'officer' && !emailLower.endsWith('@field.crimepilot.com')) {
+      setError('Officer accounts must use mandatory domain @field.crimepilot.com');
+      setSubmitting(false);
+      return;
+    }
+    if (role === 'analyst' && !emailLower.endsWith('@intel.crimepilot.com')) {
+      setError('Analyst accounts must use mandatory domain @intel.crimepilot.com');
+      setSubmitting(false);
+      return;
+    }
+    if (role === 'admin' && !emailLower.endsWith('@command.crimepilot.com')) {
+      setError('Command Division accounts must use mandatory domain @command.crimepilot.com');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const payload = {
@@ -197,6 +216,24 @@ const ManageUsers = () => {
     setSubmitting(true);
     setError('');
     setSuccess('');
+
+    // Domain validation checks
+    const emailLower = editEmail.toLowerCase();
+    if (editRole === 'officer' && !emailLower.endsWith('@field.crimepilot.com')) {
+      setError('Officer accounts must use mandatory domain @field.crimepilot.com');
+      setSubmitting(false);
+      return;
+    }
+    if (editRole === 'analyst' && !emailLower.endsWith('@intel.crimepilot.com')) {
+      setError('Analyst accounts must use mandatory domain @intel.crimepilot.com');
+      setSubmitting(false);
+      return;
+    }
+    if (editRole === 'admin' && !emailLower.endsWith('@command.crimepilot.com')) {
+      setError('Command Division accounts must use mandatory domain @command.crimepilot.com');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const payload = {
@@ -488,7 +525,10 @@ const ManageUsers = () => {
 
                     return (
                       <tr key={u._id}>
-                        <td style={{ fontWeight: '700', color: '#fff' }}>{u.name}</td>
+                        <td style={{ fontWeight: '700', color: '#fff' }}>
+                          {u.name}
+                          <div style={{ marginTop: '4px' }}>{renderDepartmentBadge(u.email)}</div>
+                        </td>
                         <td>{u.email}</td>
                         <td>
                           <span style={{

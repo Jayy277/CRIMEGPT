@@ -44,6 +44,25 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Domain-based route validation (Access Control check matching email domains to roles)
+  const emailLower = user.email ? user.email.toLowerCase() : '';
+  let domainValid = true;
+  if (user.role === 'officer' && !emailLower.endsWith('@field.crimepilot.com')) domainValid = false;
+  if (user.role === 'analyst' && !emailLower.endsWith('@intel.crimepilot.com')) domainValid = false;
+  if (user.role === 'admin' && !emailLower.endsWith('@command.crimepilot.com')) domainValid = false;
+  if (user.role === 'citizen') {
+    if (emailLower.endsWith('@field.crimepilot.com') || emailLower.endsWith('@intel.crimepilot.com') || emailLower.endsWith('@command.crimepilot.com')) {
+      domainValid = false;
+    }
+  }
+
+  if (!domainValid) {
+    if (window.location.pathname.startsWith('/citizen')) {
+      return <Navigate to="/citizen/login" replace />;
+    }
+    return <Navigate to="/login" replace />;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // Redirect unauthorized roles to their respective landing dashboards
     if (user.role === 'officer') {

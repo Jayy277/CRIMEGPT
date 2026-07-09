@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import axiosInstance from '../../api/axiosInstance';
+import { renderDepartmentBadge } from '../../api/departmentHelper';
 
 const Profile = () => {
   const { user, setUser, details, setDetails } = useContext(AuthContext);
@@ -133,9 +134,13 @@ const Profile = () => {
             <h2 style={{ fontSize: '22px', color: '#fff', fontFamily: 'Space Grotesk, sans-serif', margin: 0 }}>
               {user?.name}
             </h2>
-            <span style={{ fontSize: '12px', color: theme.color, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {theme.text}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '12px', color: theme.color, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {theme.text}
+              </span>
+              {user && renderDepartmentBadge(user.email)}
+            </div>
+
 
             {/* Profile Action Buttons */}
             <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>

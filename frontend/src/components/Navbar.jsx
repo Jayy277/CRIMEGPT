@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
+import { renderDepartmentBadge } from '../api/departmentHelper';
 
 const Navbar = ({ toggleSidebar }) => {
   const { user, logout, details } = useContext(AuthContext);
@@ -86,6 +87,9 @@ const Navbar = ({ toggleSidebar }) => {
 
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {/* Department Division Badge */}
+          {renderDepartmentBadge(user.email, { marginRight: '4px' })}
+
           {/* Role Badge */}
           <span
             style={{
@@ -102,6 +106,7 @@ const Navbar = ({ toggleSidebar }) => {
           >
             {theme.text} Portal
           </span>
+
 
           {/* Alert Bell */}
           <NotificationBell />
