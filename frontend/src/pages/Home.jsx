@@ -749,6 +749,38 @@ const Home = () => {
             <p style={{ fontSize: '13px', color: '#9AA4B2', marginTop: '8px' }}>The engineers responsible for building the CrimePilot AI National Crime Intelligence Platform.</p>
           </div>
 
+          {/* Cyberpunk keyframes style block */}
+          <style>{`
+            .team-id-card {
+              transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .team-id-card:hover {
+              transform: translateY(-6px);
+              border-color: rgba(0, 217, 255, 0.5) !important;
+              box-shadow: 0 0 35px rgba(0, 217, 255, 0.2), inset 0 0 20px rgba(0, 217, 255, 0.05) !important;
+            }
+            .team-social-btn {
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+              cursor: pointer;
+            }
+            .team-social-btn:hover {
+              background: rgba(0, 217, 255, 0.15) !important;
+              border-color: rgba(0, 217, 255, 0.5) !important;
+              box-shadow: 0 0 12px rgba(0, 217, 255, 0.4) !important;
+              color: #fff !important;
+              transform: scale(1.08);
+            }
+            @keyframes radarPulse {
+              0% { transform: rotate(0deg) scale(0.98); opacity: 0.7; }
+              50% { transform: rotate(180deg) scale(1.02); opacity: 1; }
+              100% { transform: rotate(360deg) scale(0.98); opacity: 0.7; }
+            }
+            @keyframes radarSweep {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+
           <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', flexWrap: 'wrap' }}>
             {[
               {
@@ -758,9 +790,11 @@ const Home = () => {
                 dept: 'Platform Development Unit',
                 student: 'Computer Engineering (CE)',
                 spec: 'MERN Stack, System Design, Database & UI/UX',
-                email: 'jay.kanzariya@crimepilot.gov',
-                image: '/assets/cyber_intel_officer_2.jpg',
-                isCodeIcon: false
+                email: 'jaykanzariya153@gmail.com',
+                image: '/assets/cyber_intel_officer_2.jpg?v=3',
+                isCodeIcon: false,
+                github: 'https://github.com/Jayy277',
+                linkedin: 'https://www.linkedin.com/in/jay-kanzariya-5a82a0328'
               },
               {
                 id: 'CP-002',
@@ -769,9 +803,11 @@ const Home = () => {
                 dept: 'Core System Division',
                 student: 'Computer Engineering (CE)',
                 spec: 'Node.js, Express.js, APIs, Security & Database',
-                email: 'chavda.om@crimepilot.gov',
-                image: '/assets/cyber_intel_officer_1.jpg',
-                isCodeIcon: true
+                email: 'omchavda06@gmail.com',
+                image: '/assets/cyber_intel_officer_1.jpg?v=2',
+                isCodeIcon: true,
+                github: 'https://github.com/omchavdapl',
+                linkedin: 'https://www.linkedin.com/in/om-chavda-39451a37a'
               },
               {
                 id: 'CP-003',
@@ -780,49 +816,130 @@ const Home = () => {
                 dept: 'AI & Analytics Division',
                 student: 'Computer Engineering (CE)',
                 spec: 'Python, Machine Learning, Data Analytics & AI Models',
-                email: 'solanki.chirag@crimepilot.gov',
-                image: '/assets/cyber_intel_officer_3.jpg',
-                isCodeIcon: true
+                email: 'solanki33153315@gmail.com',
+                image: '/assets/cyber_intel_officer_3.jpg?v=2',
+                isCodeIcon: true,
+                github: 'https://github.com/chirag041126',
+                linkedin: 'https://www.linkedin.com/in/chirag-solanki-618453385'
               }
             ].map((member) => (
               <div
                 key={member.id}
-                className="team-id-card glass-panel"
+                className="team-id-card"
                 style={{
-                  width: '320px',
-                  background: 'rgba(17, 24, 39, 0.85)',
-                  border: '1px solid rgba(0, 217, 255, 0.15)',
+                  width: '340px',
+                  background: 'rgba(10, 18, 32, 0.85)',
+                  border: '1px solid rgba(0, 217, 255, 0.22)',
                   borderRadius: '16px',
                   padding: '24px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
+                  position: 'relative'
                 }}
               >
                 <div className="card-scanner" />
                 
                 <div className="verified-badge" style={{
-                  position: 'absolute', top: '12px', right: '12px',
-                  background: 'rgba(0, 217, 255, 0.1)', border: '1px solid rgba(0, 217, 255, 0.3)',
-                  borderRadius: '4px', padding: '2px 6px', fontSize: '8px', color: '#00D9FF', fontWeight: 'bold'
+                  position: 'absolute', top: '16px', right: '16px',
+                  background: 'rgba(0, 217, 255, 0.05)', border: '1px solid rgba(0, 217, 255, 0.25)',
+                  borderRadius: '4px', padding: '3px 8px', fontSize: '9px', color: '#00D9FF', fontWeight: 'bold',
+                  display: 'flex', alignItems: 'center', gap: '4px', textTransform: 'uppercase', letterSpacing: '0.05em'
                 }}>
                   Verified Intel
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 </div>
 
+                {/* High-Tech Cyan Radar Scanner Avatar Frame */}
                 <div style={{
-                  width: '100px', height: '100px', borderRadius: '50%',
-                  border: '2px solid rgba(0, 217, 255, 0.4)', padding: '4px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: '16px', overflow: 'hidden'
+                  position: 'relative',
+                  width: '160px',
+                  height: '160px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '20px',
+                  marginTop: '16px'
                 }}>
-                  <img src={member.image} alt={member.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  {/* Outer scan border */}
+                  <div style={{
+                    position: 'absolute',
+                    width: '150px',
+                    height: '150px',
+                    borderRadius: '50%',
+                    border: '1px solid rgba(0, 217, 255, 0.25)',
+                    boxShadow: '0 0 15px rgba(0, 217, 255, 0.1)'
+                  }} />
+                  {/* Dashed active scope ring */}
+                  <div style={{
+                    position: 'absolute',
+                    width: '138px',
+                    height: '138px',
+                    borderRadius: '50%',
+                    border: '1px dashed rgba(0, 217, 255, 0.5)',
+                    animation: 'radarPulse 6s infinite linear'
+                  }} />
+                  {/* Rotating sweep shadow */}
+                  <div style={{
+                    position: 'absolute',
+                    width: '150px',
+                    height: '150px',
+                    borderRadius: '50%',
+                    background: 'conic-gradient(from 0deg, rgba(0, 217, 255, 0.08) 0deg, transparent 90deg, transparent 360deg)',
+                    animation: 'radarSweep 4s infinite linear',
+                    pointerEvents: 'none',
+                    zIndex: 1
+                  }} />
+                  {/* Crosshair Horizontal Alignment Line */}
+                  <div style={{
+                    position: 'absolute',
+                    width: '166px',
+                    height: '1px',
+                    background: 'linear-gradient(to right, transparent, rgba(0, 217, 255, 0.25) 10%, rgba(0, 217, 255, 0.25) 90%, transparent)',
+                    zIndex: 1
+                  }} />
+                  {/* Crosshair Vertical Alignment Line */}
+                  <div style={{
+                    position: 'absolute',
+                    width: '1px',
+                    height: '166px',
+                    background: 'linear-gradient(to bottom, transparent, rgba(0, 217, 255, 0.25) 10%, rgba(0, 217, 255, 0.25) 90%, transparent)',
+                    zIndex: 1
+                  }} />
+                  {/* Picture Core */}
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '50%',
+                    border: '2px solid rgba(0, 217, 255, 0.8)',
+                    padding: '3px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    background: '#0a1120',
+                    zIndex: 2,
+                    boxShadow: '0 0 25px rgba(0, 217, 255, 0.25)'
+                  }}>
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        filter: 'brightness(1.05) contrast(1.05)'
+                      }}
+                    />
+                  </div>
                 </div>
 
-                <h4 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '4px', letterSpacing: '0.05em' }}>{member.name}</h4>
+                <h4 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '4px', letterSpacing: '0.05em', fontFamily: 'Space Grotesk, Outfit, sans-serif' }}>{member.name}</h4>
                 <span style={{ fontSize: '11px', color: '#00D9FF', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '20px', display: 'block', textTransform: 'uppercase' }}>{member.role}</span>
 
                 {/* Details layout with icons */}
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left', marginBottom: '20px', fontSize: '11px' }}>
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left', marginBottom: '24px', fontSize: '11px' }}>
                   
                   {/* Department */}
                   <div style={{ display: 'flex', alignItems: 'flex-start' }}>
@@ -876,18 +993,49 @@ const Home = () => {
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-                  <a href="#" style={{ color: '#64748b' }} className="social-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>
+                {/* Premium Social Links in Cyber-glowing squares */}
+                <div style={{ display: 'flex', gap: '16px', marginTop: '20px', width: '100%', justifyContent: 'center' }}>
+                  <a
+                    href={member.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="team-social-btn"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: '38px', height: '38px', borderRadius: '8px',
+                      background: 'rgba(0, 217, 255, 0.03)', border: '1px solid rgba(0, 217, 255, 0.2)',
+                      color: '#00D9FF'
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>
                   </a>
-                  <a href="#" style={{ color: '#64748b' }} className="social-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect x="2" y="9" width="4" height="12" /><circle cx="4" cy="4" r="2" /></svg>
+                  <a
+                    href={member.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="team-social-btn"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: '38px', height: '38px', borderRadius: '8px',
+                      background: 'rgba(0, 217, 255, 0.03)', border: '1px solid rgba(0, 217, 255, 0.2)',
+                      color: '#00D9FF'
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect x="2" y="9" width="4" height="12" /><circle cx="4" cy="4" r="2" /></svg>
                   </a>
-                  <a href={`mailto:${member.email}`} style={{ color: '#64748b' }} className="social-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+                  <a
+                    href={`mailto:${member.email}`}
+                    className="team-social-btn"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: '38px', height: '38px', borderRadius: '8px',
+                      background: 'rgba(0, 217, 255, 0.03)', border: '1px solid rgba(0, 217, 255, 0.2)',
+                      color: '#00D9FF'
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
                   </a>
                 </div>
-
               </div>
             ))}
           </div>
@@ -963,36 +1111,62 @@ const Home = () => {
           <div>
             <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#FFF', fontFamily: 'Outfit, sans-serif' }}>CrimePilot AI</h3>
             <p style={{ fontSize: '12px', color: '#9AA4B2', marginTop: '10px', lineHeight: '1.5' }}>
-              National cyber-crime intelligence and automated digital FIR incident ledger.
+              National Crime Intelligence Platform
             </p>
           </div>
 
           <div>
             <h4 style={{ fontSize: '12px', color: '#00D9FF', fontWeight: 'bold', textTransform: 'uppercase' }}>Quick Links</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', fontSize: '13px' }}>
-              <a href="#" style={{ color: '#9AA4B2', textDecoration: 'none' }}>GitHub Repository</a>
-              <a href="#" style={{ color: '#9AA4B2', textDecoration: 'none' }}>System Documentation</a>
-              <a href="#" style={{ color: '#9AA4B2', textDecoration: 'none' }}>Tactical Support</a>
+              <a href="#" className="footer-hover-link" style={{ display: 'inline-block' }}>Documentation</a>
+              <a href="#" className="footer-hover-link" style={{ display: 'inline-block' }}>API Reference</a>
+              <a href="#" className="footer-hover-link" style={{ display: 'inline-block' }}>Citizen Portal</a>
+              <a href="#" className="footer-hover-link" style={{ display: 'inline-block' }}>Contact Center</a>
             </div>
           </div>
 
           <div>
-            <h4 style={{ fontSize: '12px', color: '#00D9FF', fontWeight: 'bold', textTransform: 'uppercase' }}>System Integrity</h4>
+            <h4 style={{ fontSize: '12px', color: '#00D9FF', fontWeight: 'bold', textTransform: 'uppercase' }}>System Status</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', fontSize: '13px', color: '#9AA4B2', fontFamily: 'monospace' }}>
-              <span>VERSION: v4.8.2-stable</span>
-              <span>INTEGRITY: SECURE (CLEAR)</span>
-              <span>MD5: 8b27c62d1a38bc</span>
+              <span>AI Engine Online</span>
+              <span>Database Synced</span>
+              <span>Network Secure</span>
+              <span>Security Level 4</span>
             </div>
           </div>
 
           <div>
             <h4 style={{ fontSize: '12px', color: '#00D9FF', fontWeight: 'bold', textTransform: 'uppercase' }}>Command Center</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', fontSize: '13px', color: '#9AA4B2' }}>
-              <span>Emergency Sector Sync: Active</span>
-              <span>Response Unit: Standby</span>
+              <span>Connected Stations: 39</span>
+              <span>Active Officers: 312</span>
+              <span>Response Status: READY</span>
             </div>
           </div>
         </div>
+
+        {/* Hover styles for quick links and developers */}
+        <style>{`
+          .footer-hover-link {
+            color: #9AA4B2;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .footer-hover-link:hover {
+            color: #00D9FF !important;
+            transform: translateX(4px);
+          }
+          .developer-hover-link {
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+          }
+          .developer-hover-link:hover {
+            color: #00D9FF !important;
+            text-shadow: 0 0 8px rgba(0, 217, 255, 0.35);
+          }
+        `}</style>
 
         <div style={{
           width: '1240px',
@@ -1002,11 +1176,21 @@ const Home = () => {
           paddingTop: '20px',
           display: 'flex',
           justifyContent: 'space-between',
+          alignItems: 'flex-start',
           fontSize: '11px',
-          color: '#64748b'
+          color: '#64748b',
+          lineHeight: '1.6'
         }}>
-          <span>© 2026 CrimePilot AI. Restricted for authorized government agencies only.</span>
-          <span>Security Clearance Level-4 Required.</span>
+          <div>
+            <span>© 2026 CrimePilot AI</span>
+          </div>
+          <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontWeight: 'bold', color: '#9AA4B2' }}>Developed by:</span>
+            <a href="https://www.linkedin.com/in/jay-kanzariya-5a82a0328" target="_blank" rel="noopener noreferrer" className="developer-hover-link">Jay Kanzariya</a>
+            <a href="https://www.linkedin.com/in/om-chavda-39451a37a" target="_blank" rel="noopener noreferrer" className="developer-hover-link">Chavda Om</a>
+            <a href="https://www.linkedin.com/in/chirag-solanki-618453385" target="_blank" rel="noopener noreferrer" className="developer-hover-link">Solanki Chirag</a>
+            <span style={{ color: '#00D9FF', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '4px' }}>Computer Engineering Department</span>
+          </div>
         </div>
       </footer>
 
