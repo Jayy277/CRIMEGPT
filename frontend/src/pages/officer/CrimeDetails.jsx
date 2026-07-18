@@ -160,6 +160,14 @@ const CrimeDetails = () => {
     e.preventDefault();
     if (!victimForm.name) return;
 
+    if (victimForm.contact) {
+      const phoneRegex = /^[789]\d{9}$/;
+      if (!phoneRegex.test(victimForm.contact)) {
+        alert('Victim contact phone number must be 10 digits starting with 7, 8, or 9.');
+        return;
+      }
+    }
+
     setSubmittingVictim(true);
     try {
       const payload = { ...victimForm, linkedCrime: id };

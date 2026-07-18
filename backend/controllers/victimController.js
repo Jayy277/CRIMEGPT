@@ -8,6 +8,16 @@ exports.createVictim = async (req, res) => {
   try {
     const { name, contact, statement, evidenceReference, linkedCrime } = req.body;
 
+    if (contact) {
+      const phoneRegex = /^[789]\d{9}$/;
+      if (!phoneRegex.test(contact)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Contact phone number must be 10 digits starting with 7, 8, or 9.',
+        });
+      }
+    }
+
     // Verify linked crime case exists
     const crimeExists = await Crime.findByPk(linkedCrime);
     if (!crimeExists) {

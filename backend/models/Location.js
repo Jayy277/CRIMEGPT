@@ -23,6 +23,10 @@ const Location = sequelize.define('Location', {
     type: DataTypes.STRING(200),
     allowNull: false,
   },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
 }, {
   tableName: 'locations',
   indexes: [

@@ -108,12 +108,20 @@ exports.signup = async (req, res) => {
 
     // Based on role, create specific profiles
     if (user.role === 'officer') {
+      const phoneRegex = /^[789]\d{9}$/;
       if (!badgeNo || !station || !contact) {
         // Rollback user creation
         await User.destroy({ where: { id: user.id } });
         return res.status(400).json({
           success: false,
           message: 'Officer requires badgeNo, station, and contact',
+        });
+      }
+      if (!phoneRegex.test(contact)) {
+        await User.destroy({ where: { id: user.id } });
+        return res.status(400).json({
+          success: false,
+          message: 'Contact phone number must be 10 digits starting with 7, 8, or 9.',
         });
       }
 

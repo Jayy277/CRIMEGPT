@@ -41,6 +41,11 @@ const CitizenRegister = () => {
       setError('Passwords do not match.');
       return;
     }
+    const phoneRegex = /^[789]\d{9}$/;
+    if (!phoneRegex.test(mobile)) {
+      setError('Mobile number must be 10 digits starting with 7, 8, or 9.');
+      return;
+    }
     if (!idFile) {
       setError('Please upload your identity proof.');
       return;

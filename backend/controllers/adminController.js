@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { User, Officer, Analyst, Location, CrimeCategory, CrimeCategorySection, AuditLog } = require('../models');
+const { User, Officer, Analyst, Location, CrimeCategory, CrimeCategorySection, AuditLog, Crime } = require('../models');
 
 // ==========================================
 // 1. CRIME CATEGORIES MANAGEMENT
@@ -145,7 +145,12 @@ exports.getLocations = async (req, res) => {
     const locations = await Location.findAll({
       order: [['policeStation', 'ASC']],
     });
-    res.status(200).json({ success: true, locations });
+    const formattedLocations = locations.map(loc => {
+      const data = loc.toJSON();
+      data._id = loc.id;
+      return data;
+    });
+    res.status(200).json({ success: true, locations: formattedLocations });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -189,12 +194,35 @@ exports.updateLocation = async (req, res) => {
 // Delete Location
 exports.deleteLocation = async (req, res) => {
   try {
-    const location = await Location.findByPk(req.params.id);
+    const { id } = req.params;
+    const location = await Location.findByPk(id);
     if (!location) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
-    await location.destroy();
-    res.status(200).json({ success: true, message: 'Location deleted successfully' });
+
+    // Check for active cases (status not in 'Solved', 'Closed')
+    const activeCasesCount = await Crime.count({
+      where: {
+        locationId: id,
+        status: { [Op.notIn]: ['Solved', 'Closed'] }
+      }
+    });
+
+    if (activeCasesCount > 0) {
+      return res.status(400).json({
+        success: false,
+        error: `Cannot remove this station.\n${activeCasesCount} active cases are currently assigned.`
+      });
+    }
+
+    // No active cases: deactivate the station
+    location.isActive = false;
+    await location.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Station deactivated successfully.'
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

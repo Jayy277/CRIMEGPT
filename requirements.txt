@@ -1,0 +1,15 @@
+# Django Core and Web Framework dependencies
+Django==4.2.23
+djangorestframework>=3.14.0
+djangorestframework-simplejwt>=5.3.1
+django-cors-headers>=4.3.1
+python-dotenv>=1.0.0
+
+# Database connector for MySQL
+mysqlclient>=2.2.0
+
+# Media/Imaging & PDF compilation components
+reportlab>=4.0.9
+pillow>=10.2.0
+matplotlib>=3.8.2
+networkx>=3.2.1

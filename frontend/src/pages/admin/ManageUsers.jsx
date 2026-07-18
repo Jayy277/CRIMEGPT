@@ -115,6 +115,12 @@ const ManageUsers = () => {
       };
 
       if (role === 'officer') {
+        const phoneRegex = /^[789]\d{9}$/;
+        if (!phoneRegex.test(contact)) {
+          setError('Contact phone number must be 10 digits starting with 7, 8, or 9.');
+          setSubmitting(false);
+          return;
+        }
         payload.badgeNo = badgeNo;
         payload.station = station;
         payload.contact = contact;
@@ -223,6 +229,12 @@ const ManageUsers = () => {
       };
 
       if (editRole === 'officer') {
+        const phoneRegex = /^[789]\d{9}$/;
+        if (!phoneRegex.test(editContact)) {
+          setError('Contact phone number must be 10 digits starting with 7, 8, or 9.');
+          setSubmitting(false);
+          return;
+        }
         payload.badgeNo = editBadgeNo;
         payload.station = editStation;
         payload.contact = editContact;

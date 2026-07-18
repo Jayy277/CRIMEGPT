@@ -71,19 +71,17 @@ const Locations = () => {
 
   // Delete Location
   const handleDeleteLocation = async (locId, stationName) => {
-    if (!window.confirm(`Are you sure you want to delete jurisdiction location: "${stationName}"? This will clean up its bindings.`)) return;
-
     setError('');
     setSuccess('');
     try {
       const res = await axiosInstance.delete(`/admin/locations/${locId}`);
       if (res.data && res.data.success) {
-        setSuccess(`Location "${stationName}" deleted successfully.`);
-        setLocations(prev => prev.filter(l => l._id !== locId));
+        setSuccess(`Location "${stationName}" deactivated successfully.`);
+        setLocations(prev => prev.map(l => (l._id === locId || l.id === locId) ? { ...l, isActive: false } : l));
       }
     } catch (err) {
       console.error('Error deleting location:', err);
-      setError(err.response?.data?.message || 'Failed to delete location.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to delete location.');
     }
   };
 
@@ -240,22 +238,30 @@ const Locations = () => {
         ) : (
           <div className="custom-table-container">
             <table className="custom-table">
-              <thead>
+               <thead>
                 <tr>
                   <th>Police Station</th>
                   <th>City</th>
                   <th>District</th>
                   <th>State</th>
+                  <th>Status</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {locations.map((loc) => (
-                  <tr key={loc._id}>
+                  <tr key={loc._id} style={{ opacity: loc.isActive === false ? 0.6 : 1 }}>
                     <td style={{ fontWeight: '700', color: '#fff' }}>{loc.policeStation}</td>
                     <td>{loc.city}</td>
                     <td>{loc.district}</td>
                     <td>{loc.state}</td>
+                    <td>
+                      {loc.isActive === false ? (
+                        <span style={{ color: '#ef4444', backgroundColor: '#ef444415', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '800' }}>Inactive</span>
+                      ) : (
+                        <span style={{ color: '#10b981', backgroundColor: '#10b98115', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '800' }}>Active</span>
+                      )}
+                    </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '8px' }}>
                         <button
@@ -266,11 +272,18 @@ const Locations = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteLocation(loc._id, loc.policeStation)}
+                          onClick={() => handleDeleteLocation(loc._id || loc.id, loc.policeStation)}
                           className="btn btn-secondary"
-                          style={{ fontSize: '11px', padding: '4px 8px', color: '#f43f5e', borderColor: 'rgba(244,63,94,0.1)' }}
+                          disabled={loc.isActive === false}
+                          style={{
+                            fontSize: '11px',
+                            padding: '4px 8px',
+                            color: loc.isActive === false ? '#64748b' : '#f43f5e',
+                            borderColor: loc.isActive === false ? 'rgba(100,116,139,0.1)' : 'rgba(244,63,94,0.1)',
+                            cursor: loc.isActive === false ? 'not-allowed' : 'pointer'
+                          }}
                         >
-                          Delete
+                          {loc.isActive === false ? 'Deactivated' : 'Deactivate'}
                         </button>
                       </div>
                     </td>

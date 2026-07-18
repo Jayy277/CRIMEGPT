@@ -11,6 +11,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.conf import settings
 import hashlib
 import os
+import re
 
 from .models import Officer, Analyst
 from .serializers import OfficerSerializer, AnalystSerializer
@@ -135,6 +136,13 @@ class SignupView(APIView):
           user.delete()
           return Response(
             {'success': False, 'message': 'Officer requires badgeNo, station, and contact'},
+            status=status.HTTP_400_BAD_REQUEST
+          )
+
+        if not re.match(r'^[789]\d{9}$', str(contact)):
+          user.delete()
+          return Response(
+            {'success': False, 'message': 'Contact phone number must be 10 digits starting with 7, 8, or 9.'},
             status=status.HTTP_400_BAD_REQUEST
           )
 
@@ -362,6 +370,9 @@ class CitizenSignupView(APIView):
 
     if User.objects.filter(email__iexact=email).exists():
       return Response({'success': False, 'message': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not re.match(r'^[789]\d{9}$', str(mobile)):
+      return Response({'success': False, 'message': 'Mobile number must be 10 digits starting with 7, 8, or 9.'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Domain validation checks (Citizens cannot use internal domains)
     email_lower = email.lower()
