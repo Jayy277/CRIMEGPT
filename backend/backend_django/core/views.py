@@ -30,7 +30,7 @@ def notify(recipient, n_type, message):
     print("Notification error:", e)
 
 class LocationViewSet(viewsets.ModelViewSet):
-  queryset = Location.objects.all()
+  queryset = Location.objects.all().order_by('police_station')
   serializer_class = LocationSerializer
   def get_permissions(self):
     if self.action in ['list', 'retrieve']:
@@ -68,7 +68,7 @@ class LocationViewSet(viewsets.ModelViewSet):
 
 
 class CrimeCategoryViewSet(viewsets.ModelViewSet):
-  queryset = CrimeCategory.objects.all()
+  queryset = CrimeCategory.objects.all().order_by('name')
   serializer_class = CrimeCategorySerializer
   def get_permissions(self):
     if self.action in ['list', 'retrieve']:

@@ -24,7 +24,10 @@ const Locations = () => {
       setError('');
       const res = await axiosInstance.get('/admin/locations');
       if (res.data && res.data.success) {
-        setLocations(res.data.locations || []);
+        const sorted = (res.data.locations || []).sort((a, b) => 
+          a.policeStation.localeCompare(b.policeStation)
+        );
+        setLocations(sorted);
       }
     } catch (err) {
       console.error('Error fetching locations:', err);

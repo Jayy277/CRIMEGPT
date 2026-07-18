@@ -38,6 +38,7 @@ exports.getCategories = async (req, res) => {
   try {
     const categories = await CrimeCategory.findAll({
       include: [{ model: CrimeCategorySection, as: 'sections' }],
+      order: [['name', 'ASC']],
     });
     res.status(200).json({ success: true, categories });
   } catch (error) {
@@ -141,7 +142,9 @@ exports.createLocation = async (req, res) => {
 // Get all Locations
 exports.getLocations = async (req, res) => {
   try {
-    const locations = await Location.findAll({});
+    const locations = await Location.findAll({
+      order: [['policeStation', 'ASC']],
+    });
     res.status(200).json({ success: true, locations });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

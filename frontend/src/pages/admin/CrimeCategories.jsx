@@ -27,7 +27,10 @@ const CrimeCategories = () => {
       setError('');
       const res = await axiosInstance.get('/admin/crime-categories');
       if (res.data && res.data.success) {
-        setCategories(res.data.categories || []);
+        const sorted = (res.data.categories || []).sort((a, b) => 
+          a.name.localeCompare(b.name)
+        );
+        setCategories(sorted);
       }
     } catch (err) {
       console.error('Error fetching categories:', err);
