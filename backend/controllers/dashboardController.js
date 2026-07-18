@@ -1,9 +1,6 @@
-const mongoose = require('mongoose');
-const Crime = require('../models/Crime');
-const User = require('../models/User');
-const Officer = require('../models/Officer');
-const Location = require('../models/Location');
-const CrimeCategory = require('../models/CrimeCategory');
+const { Op } = require('sequelize');
+const sequelize = require('../config/db');
+const { Crime, User, Officer, Location, CrimeCategory } = require('../models');
 const { generateReportPDF } = require('../utils/pdfGenerator');
 
 // @desc    Get Officer Dashboard Stats
@@ -11,30 +8,31 @@ const { generateReportPDF } = require('../utils/pdfGenerator');
 // @access  Private (Officer, Admin)
 exports.getOfficerDashboard = async (req, res) => {
   try {
-    // Find officer associated with logged in user
-    const officer = await Officer.findOne({ user: req.user._id });
+    const officer = await Officer.findOne({ where: { userId: req.user.id } });
     if (!officer) {
       return res.status(404).json({ success: false, message: 'Officer profile not found' });
     }
 
-    // 1. Assigned cases count
-    const totalAssigned = await Crime.countDocuments({ officer: officer._id });
+    const totalAssigned = await Crime.count({ where: { officerId: officer.id } });
 
-    // 2. Pending investigations count (status !== 'Solved' and status !== 'Closed')
-    const pendingCount = await Crime.countDocuments({
-      officer: officer._id,
-      status: { $nin: ['Solved', 'Closed'] },
+    const pendingCount = await Crime.count({
+      where: {
+        officerId: officer.id,
+        status: { [Op.notIn]: ['Solved', 'Closed'] },
+      },
     });
 
-    // 3. Solved cases count
     const solvedCount = totalAssigned - pendingCount;
 
-    // 4. Recent reports (latest 5 cases assigned)
-    const recentCases = await Crime.find({ officer: officer._id })
-      .populate('crimeCategory')
-      .populate('location')
-      .sort({ createdAt: -1 })
-      .limit(5);
+    const recentCases = await Crime.findAll({
+      where: { officerId: officer.id },
+      include: [
+        { model: CrimeCategory, as: 'category' },
+        { model: Location, as: 'location' },
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: 5,
+    });
 
     res.status(200).json({
       success: true,
@@ -55,105 +53,91 @@ exports.getOfficerDashboard = async (req, res) => {
 // @access  Private (Analyst, Admin)
 exports.getAnalystDashboard = async (req, res) => {
   try {
-    // 1. Total crimes
-    const totalCrimes = await Crime.countDocuments();
+    const totalCrimes = await Crime.count();
 
-    // 2. Solved vs Pending
-    const solvedCount = await Crime.countDocuments({ status: { $in: ['Solved', 'Closed'] } });
+    const solvedCount = await Crime.count({
+      where: {
+        status: { [Op.in]: ['Solved', 'Closed'] },
+      },
+    });
     const pendingCount = totalCrimes - solvedCount;
 
-    // 3. Category distribution (aggregate group by category)
-    const categoryStats = await Crime.aggregate([
-      {
-        $group: {
-          _id: '$crimeCategory',
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $lookup: {
-          from: 'crimecategories', // mongoose collection name
-          localField: '_id',
-          foreignField: '_id',
-          as: 'categoryDetails',
-        },
-      },
-      { $unwind: '$categoryDetails' },
-      {
-        $project: {
-          _id: 1,
-          name: '$categoryDetails.name',
-          count: 1,
-        },
-      },
-      { $sort: { count: -1 } },
-    ]);
+    // Category distribution using Sequelize group & count
+    const categoryStatsQuery = await Crime.findAll({
+      attributes: [
+        'categoryId',
+        [sequelize.fn('COUNT', sequelize.col('Crime.id')), 'count'],
+      ],
+      include: [{ model: CrimeCategory, as: 'category', attributes: ['name'] }],
+      group: ['categoryId', 'category.id', 'category.name'],
+      order: [[sequelize.col('count'), 'DESC']],
+    });
 
-    // 4. Hotspot data (aggregate group by location)
-    const hotspotStats = await Crime.aggregate([
-      {
-        $group: {
-          _id: '$location',
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $lookup: {
-          from: 'locations',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'locationDetails',
-        },
-      },
-      { $unwind: '$locationDetails' },
-      {
-        $project: {
-          _id: 1,
-          state: '$locationDetails.state',
-          district: '$locationDetails.district',
-          city: '$locationDetails.city',
-          policeStation: '$locationDetails.policeStation',
-          count: 1,
-        },
-      },
-      { $sort: { count: -1 } },
-      { $limit: 10 }, // Top 10 hotspots
-    ]);
+    const categoryStats = categoryStatsQuery.map(c => ({
+      _id: c.categoryId,
+      count: parseInt(c.get('count')),
+      name: c.category ? c.category.name : 'Unknown',
+    }));
 
-    // 5. Monthly trends (aggregate group by year and month)
-    const monthlyTrends = await Crime.aggregate([
-      {
-        $group: {
-          _id: {
-            year: { $year: '$date' },
-            month: { $month: '$date' },
-          },
-          count: { $sum: 1 },
-        },
-      },
-      { $sort: { '_id.year': -1, '_id.month': -1 } },
-      { $limit: 12 }, // Last 12 months
-    ]);
+    // Hotspot stats using location relation
+    const hotspotStatsQuery = await Crime.findAll({
+      attributes: [
+        'locationId',
+        [sequelize.fn('COUNT', sequelize.col('Crime.id')), 'count'],
+      ],
+      include: [{ model: Location, as: 'location' }],
+      group: ['locationId', 'location.id', 'location.state', 'location.district', 'location.city', 'location.policeStation'],
+      order: [[sequelize.col('count'), 'DESC']],
+      limit: 10,
+    });
 
-    // 6. Peak crime hours (based on 'time' field HH:MM)
-    // Extract hour from HH:MM string and aggregate
-    const hourStats = await Crime.aggregate([
-      {
-        $project: {
-          hour: {
-            $arrayElemAt: [{ $split: ['$time', ':'] }, 0],
-          },
-        },
+    const hotspotStats = hotspotStatsQuery.map(h => ({
+      _id: h.locationId,
+      count: parseInt(h.get('count')),
+      state: h.location ? h.location.state : '',
+      district: h.location ? h.location.district : '',
+      city: h.location ? h.location.city : '',
+      policeStation: h.location ? h.location.policeStation : '',
+    }));
+
+    // Monthly trends
+    const monthlyTrendsQuery = await Crime.findAll({
+      attributes: [
+        [sequelize.fn('YEAR', sequelize.col('date')), 'year'],
+        [sequelize.fn('MONTH', sequelize.col('date')), 'month'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+      ],
+      group: [sequelize.fn('YEAR', sequelize.col('date')), sequelize.fn('MONTH', sequelize.col('date'))],
+      order: [
+        [sequelize.literal('year'), 'DESC'],
+        [sequelize.literal('month'), 'DESC'],
+      ],
+      limit: 12,
+    });
+
+    const monthlyTrends = monthlyTrendsQuery.map(m => ({
+      _id: {
+        year: parseInt(m.get('year')),
+        month: parseInt(m.get('month')),
       },
-      {
-        $group: {
-          _id: '$hour',
-          count: { $sum: 1 },
-        },
-      },
-      { $sort: { count: -1 } },
-      { $limit: 5 }, // Top 5 peak hours
-    ]);
+      count: parseInt(m.get('count')),
+    }));
+
+    // Peak crime hours (based on 'time' field HH:MM)
+    const hourStatsQuery = await Crime.findAll({
+      attributes: [
+        [sequelize.fn('SUBSTRING', sequelize.col('time'), 1, 2), 'hour'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+      ],
+      group: [sequelize.fn('SUBSTRING', sequelize.col('time'), 1, 2)],
+      order: [[sequelize.col('count'), 'DESC']],
+      limit: 5,
+    });
+
+    const hourStats = hourStatsQuery.map(h => ({
+      _id: h.get('hour'),
+      count: parseInt(h.get('count')),
+    }));
 
     res.status(200).json({
       success: true,
@@ -178,16 +162,25 @@ exports.getAnalystDashboard = async (req, res) => {
 // @access  Private (Admin)
 exports.getAdminDashboard = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const activeUsers = await User.countDocuments({ isActive: true });
-    
+    const totalUsers = await User.count();
+    const activeUsers = await User.count({ where: { isActive: true } });
+
     // Active officers count
-    const activeOfficers = await Officer.countDocuments({
-      user: { $in: await User.find({ role: 'officer', isActive: true }).distinct('_id') }
+    const activeOfficers = await Officer.count({
+      include: [{ model: User, where: { role: 'officer', isActive: true } }],
     });
 
-    const activeCases = await Crime.countDocuments({ status: { $nin: ['Solved', 'Closed'] } });
-    const solvedCases = await Crime.countDocuments({ status: { $in: ['Solved', 'Closed'] } });
+    const activeCases = await Crime.count({
+      where: {
+        status: { [Op.notIn]: ['Solved', 'Closed'] },
+      },
+    });
+
+    const solvedCases = await Crime.count({
+      where: {
+        status: { [Op.in]: ['Solved', 'Closed'] },
+      },
+    });
 
     res.status(200).json({
       success: true,
@@ -210,32 +203,32 @@ exports.getAdminDashboard = async (req, res) => {
 exports.getReport = async (req, res) => {
   try {
     const { startDate, endDate, format, priority, status } = req.query;
+    const where = {};
 
-    const filter = {};
-
-    // Date range filters
     if (startDate || endDate) {
-      filter.date = {};
-      if (startDate) filter.date.$gte = new Date(startDate);
-      if (endDate) filter.date.$lte = new Date(endDate + 'T23:59:59.999Z');
+      where.date = {};
+      if (startDate) where.date[Op.gte] = startDate;
+      if (endDate) where.date[Op.lte] = endDate;
     }
 
-    if (priority) filter.priority = priority;
-    if (status) filter.status = status;
+    if (priority) where.priority = priority;
+    if (status) where.status = status;
 
-    // Retrieve matching cases
-    const crimes = await Crime.find(filter)
-      .populate('crimeCategory')
-      .populate('location')
-      .sort({ date: -1 });
+    const crimes = await Crime.findAll({
+      where,
+      include: [
+        { model: CrimeCategory, as: 'category' },
+        { model: Location, as: 'location' },
+      ],
+      order: [['date', 'DESC']],
+    });
 
     const periodStr = (startDate || 'Beginning') + ' to ' + (endDate || 'Present');
 
-    // Return PDF
     if (format === 'pdf') {
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=CrimeGPT-Report-${Date.now()}.pdf`);
-      
+
       return generateReportPDF(
         res,
         'Crime Cases Compilation Report',
@@ -245,7 +238,6 @@ exports.getReport = async (req, res) => {
       );
     }
 
-    // Return JSON (default)
     res.status(200).json({
       success: true,
       period: periodStr,

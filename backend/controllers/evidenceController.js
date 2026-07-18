@@ -1,6 +1,5 @@
-const Evidence = require('../models/Evidence');
-const Crime = require('../models/Crime');
-const Officer = require('../models/Officer');
+const { Op } = require('sequelize');
+const { Evidence, Crime, Officer, User } = require('../models');
 
 // @desc    Create an evidence record (optional file upload structure)
 // @route   POST /api/evidence
@@ -10,18 +9,17 @@ exports.createEvidence = async (req, res) => {
     const { type, description, collectionDate, assignedOfficer, linkedCrime } = req.body;
 
     // Verify linked crime case exists
-    const crimeExists = await Crime.findById(linkedCrime);
+    const crimeExists = await Crime.findByPk(linkedCrime);
     if (!crimeExists) {
       return res.status(404).json({ success: false, message: 'Linked crime case not found' });
     }
 
     // Verify officer exists
-    const officerExists = await Officer.findById(assignedOfficer);
+    const officerExists = await Officer.findByPk(assignedOfficer);
     if (!officerExists) {
       return res.status(404).json({ success: false, message: 'Assigned officer not found' });
     }
 
-    // File path from Multer (if upload was used)
     let filePath = '';
     if (req.file) {
       filePath = `/uploads/${req.file.filename}`;
@@ -31,8 +29,8 @@ exports.createEvidence = async (req, res) => {
       type,
       description,
       collectionDate: collectionDate || new Date(),
-      assignedOfficer,
-      linkedCrime,
+      assignedOfficerId: assignedOfficer,
+      linkedCrimeId: linkedCrime,
       filePath,
     });
 
@@ -47,38 +45,47 @@ exports.createEvidence = async (req, res) => {
 // @access  Private (Officer, Analyst, Admin)
 exports.getEvidence = async (req, res) => {
   try {
-    const { type, assignedOfficer, linkedCrime } = req.query;
-    const filter = {};
+    const { type, linkedCrime, assignedOfficer } = req.query;
+    const where = {};
 
-    if (type) filter.type = { $regex: type, $options: 'i' };
-    if (assignedOfficer) filter.assignedOfficer = assignedOfficer;
-    if (linkedCrime) filter.linkedCrime = linkedCrime;
+    if (type) where.type = { [Op.like]: `%${type}%` };
+    if (linkedCrime) where.linkedCrimeId = linkedCrime;
+    if (assignedOfficer) where.assignedOfficerId = assignedOfficer;
 
-    const evidenceList = await Evidence.find(filter)
-      .populate('linkedCrime')
-      .populate({
-        path: 'assignedOfficer',
-        populate: { path: 'user', select: 'name email' },
-      })
-      .sort({ createdAt: -1 });
+    const evidence = await Evidence.findAll({
+      where,
+      include: [
+        { model: Crime, as: 'linkedCrime' },
+        {
+          model: Officer,
+          as: 'assignedOfficer',
+          include: [{ model: User, attributes: ['name', 'email'] }],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
 
-    res.status(200).json({ success: true, count: evidenceList.length, evidence: evidenceList });
+    res.status(200).json({ success: true, count: evidence.length, evidence });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-// @desc    Get evidence record by ID
+// @desc    Get single evidence by ID
 // @route   GET /api/evidence/:id
 // @access  Private (Officer, Analyst, Admin)
 exports.getEvidenceById = async (req, res) => {
   try {
-    const evidence = await Evidence.findById(req.params.id)
-      .populate('linkedCrime')
-      .populate({
-        path: 'assignedOfficer',
-        populate: { path: 'user', select: 'name email' },
-      });
+    const evidence = await Evidence.findByPk(req.params.id, {
+      include: [
+        { model: Crime, as: 'linkedCrime' },
+        {
+          model: Officer,
+          as: 'assignedOfficer',
+          include: [{ model: User, attributes: ['name', 'email'] }],
+        },
+      ],
+    });
 
     if (!evidence) {
       return res.status(404).json({ success: false, message: 'Evidence record not found' });
@@ -90,13 +97,13 @@ exports.getEvidenceById = async (req, res) => {
   }
 };
 
-// @desc    Update an evidence record (optional file upload structure)
+// @desc    Update an evidence record
 // @route   PUT /api/evidence/:id
 // @access  Private (Officer, Admin)
 exports.updateEvidence = async (req, res) => {
   try {
     const { type, description, collectionDate, assignedOfficer, linkedCrime } = req.body;
-    const evidence = await Evidence.findById(req.params.id);
+    const evidence = await Evidence.findByPk(req.params.id);
 
     if (!evidence) {
       return res.status(404).json({ success: false, message: 'Evidence record not found' });
@@ -105,21 +112,21 @@ exports.updateEvidence = async (req, res) => {
     if (type) evidence.type = type;
     if (description) evidence.description = description;
     if (collectionDate) evidence.collectionDate = collectionDate;
-    
+
     if (assignedOfficer) {
-      const officerExists = await Officer.findById(assignedOfficer);
+      const officerExists = await Officer.findByPk(assignedOfficer);
       if (!officerExists) {
         return res.status(404).json({ success: false, message: 'Assigned officer not found' });
       }
-      evidence.assignedOfficer = assignedOfficer;
+      evidence.assignedOfficerId = assignedOfficer;
     }
 
     if (linkedCrime) {
-      const crimeExists = await Crime.findById(linkedCrime);
+      const crimeExists = await Crime.findByPk(linkedCrime);
       if (!crimeExists) {
         return res.status(404).json({ success: false, message: 'Linked crime case not found' });
       }
-      evidence.linkedCrime = linkedCrime;
+      evidence.linkedCrimeId = linkedCrime;
     }
 
     if (req.file) {
@@ -138,11 +145,11 @@ exports.updateEvidence = async (req, res) => {
 // @access  Private (Officer, Admin)
 exports.deleteEvidence = async (req, res) => {
   try {
-    const evidence = await Evidence.findById(req.params.id);
+    const evidence = await Evidence.findByPk(req.params.id);
     if (!evidence) {
       return res.status(404).json({ success: false, message: 'Evidence record not found' });
     }
-    await evidence.deleteOne();
+    await evidence.destroy();
     res.status(200).json({ success: true, message: 'Evidence record deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

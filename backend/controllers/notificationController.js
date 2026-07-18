@@ -1,14 +1,16 @@
-const Notification = require('../models/Notification');
+const { Notification } = require('../models');
 
 // @desc    Get user's notifications
 // @route   GET /api/notifications
 // @access  Private (Officer, Analyst, Admin)
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ recipient: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(50); // limit to 50 most recent notifications
-    
+    const notifications = await Notification.findAll({
+      where: { recipientId: req.user.id },
+      order: [['createdAt', 'DESC']],
+      limit: 50, // limit to 50 most recent notifications
+    });
+
     res.status(200).json({ success: true, count: notifications.length, notifications });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -21,8 +23,10 @@ exports.getNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
   try {
     const notification = await Notification.findOne({
-      _id: req.params.id,
-      recipient: req.user._id,
+      where: {
+        id: req.params.id,
+        recipientId: req.user.id,
+      },
     });
 
     if (!notification) {
@@ -43,9 +47,9 @@ exports.markAsRead = async (req, res) => {
 // @access  Private (Officer, Analyst, Admin)
 exports.markAllAsRead = async (req, res) => {
   try {
-    await Notification.updateMany(
-      { recipient: req.user._id, read: false },
-      { $set: { read: true } }
+    await Notification.update(
+      { read: true },
+      { where: { recipientId: req.user.id, read: false } }
     );
     res.status(200).json({ success: true, message: 'All notifications marked as read' });
   } catch (error) {

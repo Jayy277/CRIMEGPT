@@ -102,7 +102,7 @@ def run_tests():
     log("Test 5: Creating a Police Officer user...")
     status_code, res = request('/auth/signup', 'POST', headers={'Authorization': f"Bearer {admin_token}"}, data={
       'name': 'Officer Django',
-      'email': f'officer.django.{int(time.time())}@field.crimepilot.com',
+      'email': f'officer.django.{int(time.time())}@crimepilot.com',
       'password': 'Officer@123',
       'role': 'officer',
       'badgeNo': f"BADGE-{int(time.time()) % 10000}",

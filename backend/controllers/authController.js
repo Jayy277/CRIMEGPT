@@ -2,9 +2,8 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
-const User = require('../models/User');
-const Officer = require('../models/Officer');
-const Analyst = require('../models/Analyst');
+const { Op } = require('sequelize');
+const { User, Officer, Analyst, Location } = require('../models');
 
 // Generate JWT Token
 const generateToken = (id, role) => {
@@ -26,41 +25,22 @@ exports.login = async (req, res) => {
 
     // Check for user (find by email or name)
     const user = await User.findOne({
-      $or: [
-        { email: usernameOrEmail.toLowerCase() },
-        { name: usernameOrEmail },
-      ],
-    }).select('+password');
+      where: {
+        [Op.or]: [
+          { email: usernameOrEmail.toLowerCase() },
+          { name: usernameOrEmail },
+        ],
+      },
+    });
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    // Domain validation checks
-    const emailLower = user.email.toLowerCase();
-    if (user.role === 'officer') {
-      if (!emailLower.endsWith('@field.crimepilot.com')) {
-        return res.status(403).json({ success: false, message: 'Officer login restricted to @field.crimepilot.com accounts.' });
-      }
-    } else if (user.role === 'analyst') {
-      if (!emailLower.endsWith('@intel.crimepilot.com')) {
-        return res.status(403).json({ success: false, message: 'Analyst login restricted to @intel.crimepilot.com accounts.' });
-      }
-    } else if (user.role === 'admin') {
-      if (!emailLower.endsWith('@command.crimepilot.com')) {
-        return res.status(403).json({ success: false, message: 'Command Division login restricted to @command.crimepilot.com accounts.' });
-      }
-    } else if (user.role === 'citizen') {
-      if (emailLower.endsWith('@field.crimepilot.com') || emailLower.endsWith('@intel.crimepilot.com') || emailLower.endsWith('@command.crimepilot.com')) {
-        return res.status(403).json({ success: false, message: 'Citizen accounts cannot use internal CrimePilot domains.' });
-      }
     }
 
     // Check if account is active
     if (!user.isActive) {
       return res.status(403).json({ success: false, message: 'Your account is deactivated' });
     }
-
 
     // Check password
     const isMatch = await user.comparePassword(password);
@@ -69,14 +49,19 @@ exports.login = async (req, res) => {
     }
 
     // Generate token
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user.id, user.role);
 
     // Get additional info if officer or analyst
     let extraDetails = {};
     if (user.role === 'officer') {
-      extraDetails = await Officer.findOne({ user: user._id }).populate('station');
+      extraDetails = await Officer.findOne({
+        where: { userId: user.id },
+        include: [{ model: Location, as: 'station' }],
+      });
     } else if (user.role === 'analyst') {
-      extraDetails = await Analyst.findOne({ user: user._id });
+      extraDetails = await Analyst.findOne({
+        where: { userId: user.id },
+      });
     }
 
     // Send response
@@ -84,18 +69,12 @@ exports.login = async (req, res) => {
       success: true,
       token,
       user: {
-        _id: user._id,
+        _id: user.id, // Keep _id mapping for frontend compat
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         isActive: user.isActive,
-        department: (() => {
-          const emailLower = user.email.toLowerCase();
-          if (emailLower.endsWith('@field.crimepilot.com')) return 'Field Division';
-          if (emailLower.endsWith('@intel.crimepilot.com')) return 'Intelligence Division';
-          if (emailLower.endsWith('@command.crimepilot.com')) return 'Command Division';
-          return null;
-        })()
       },
       details: extraDetails,
     });
@@ -112,36 +91,15 @@ exports.signup = async (req, res) => {
     const { name, email, password, role, badgeNo, station, contact, department } = req.body;
 
     // Check if email already exists
-    const emailExists = await User.findOne({ email: email.toLowerCase() });
+    const emailExists = await User.findOne({ where: { email: email.toLowerCase() } });
     if (emailExists) {
       return res.status(400).json({ success: false, message: 'Email already registered' });
-    }
-
-    // Domain validation checks
-    const emailLower = email.toLowerCase();
-    const targetRole = role || 'officer';
-    if (targetRole === 'officer') {
-      if (!emailLower.endsWith('@field.crimepilot.com')) {
-        return res.status(400).json({ success: false, message: 'Officer registration email must end with @field.crimepilot.com' });
-      }
-    } else if (targetRole === 'analyst') {
-      if (!emailLower.endsWith('@intel.crimepilot.com')) {
-        return res.status(400).json({ success: false, message: 'Analyst registration email must end with @intel.crimepilot.com' });
-      }
-    } else if (targetRole === 'admin') {
-      if (!emailLower.endsWith('@command.crimepilot.com')) {
-        return res.status(400).json({ success: false, message: 'Admin registration email must end with @command.crimepilot.com' });
-      }
-    } else if (targetRole === 'citizen') {
-      if (emailLower.endsWith('@field.crimepilot.com') || emailLower.endsWith('@intel.crimepilot.com') || emailLower.endsWith('@command.crimepilot.com')) {
-        return res.status(400).json({ success: false, message: 'Citizen registration email cannot use internal CrimePilot domains' });
-      }
     }
 
     // Create User
     const user = await User.create({
       name,
-      email,
+      email: email.toLowerCase(),
       password,
       role: role || 'officer',
     });
@@ -152,7 +110,7 @@ exports.signup = async (req, res) => {
     if (user.role === 'officer') {
       if (!badgeNo || !station || !contact) {
         // Rollback user creation
-        await User.findByIdAndDelete(user._id);
+        await User.destroy({ where: { id: user.id } });
         return res.status(400).json({
           success: false,
           message: 'Officer requires badgeNo, station, and contact',
@@ -160,15 +118,15 @@ exports.signup = async (req, res) => {
       }
 
       extraDetails = await Officer.create({
-        user: user._id,
+        userId: user.id,
         badgeNo,
-        station,
+        stationId: station,
         contact,
       });
     } else if (user.role === 'analyst') {
       if (!department) {
         // Rollback user creation
-        await User.findByIdAndDelete(user._id);
+        await User.destroy({ where: { id: user.id } });
         return res.status(400).json({
           success: false,
           message: 'Analyst requires department',
@@ -176,7 +134,7 @@ exports.signup = async (req, res) => {
       }
 
       extraDetails = await Analyst.create({
-        user: user._id,
+        userId: user.id,
         department,
       });
     }
@@ -185,18 +143,12 @@ exports.signup = async (req, res) => {
       success: true,
       message: `${user.role.toUpperCase()} registered successfully`,
       user: {
-        _id: user._id,
+        _id: user.id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         isActive: user.isActive,
-        department: (() => {
-          const emailLower = user.email.toLowerCase();
-          if (emailLower.endsWith('@field.crimepilot.com')) return 'Field Division';
-          if (emailLower.endsWith('@intel.crimepilot.com')) return 'Intelligence Division';
-          if (emailLower.endsWith('@command.crimepilot.com')) return 'Command Division';
-          return null;
-        })()
       },
       details: extraDetails,
     });
@@ -211,7 +163,7 @@ exports.signup = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ where: { email: email.toLowerCase() } });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found with this email' });
@@ -227,11 +179,10 @@ exports.forgotPassword = async (req, res) => {
       .digest('hex');
 
     // Set expire (10 minutes)
-    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+    user.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000);
 
     await user.save();
 
-    // In production we send an email. For CrimeGPT v1, we return the token in response and console log it.
     console.log(`Password reset token for ${user.email}: ${resetToken}`);
 
     res.status(200).json({
@@ -257,8 +208,10 @@ exports.resetPassword = async (req, res) => {
       .digest('hex');
 
     const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() },
+      where: {
+        resetPasswordToken,
+        resetPasswordExpire: { [Op.gt]: new Date() },
+      },
     });
 
     if (!user) {
@@ -267,8 +220,8 @@ exports.resetPassword = async (req, res) => {
 
     // Set new password
     user.password = req.body.password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpire = null;
 
     await user.save();
 
@@ -290,7 +243,7 @@ exports.uploadProfilePicture = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please upload a valid image file' });
     }
 
-    const officer = await Officer.findOne({ user: req.user.id });
+    const officer = await Officer.findOne({ where: { userId: req.user.id } });
     if (!officer) {
       return res.status(404).json({ success: false, message: 'Officer profile not found' });
     }
@@ -307,12 +260,14 @@ exports.uploadProfilePicture = async (req, res) => {
     officer.profilePicture = `/uploads/${req.file.filename}`;
     await officer.save();
 
-    const populatedOfficer = await Officer.findById(officer._id).populate('station');
+    const populatedOfficer = await Officer.findByPk(officer.id, {
+      include: [{ model: Location, as: 'station' }],
+    });
 
     res.status(200).json({
       success: true,
       message: 'Profile picture uploaded successfully',
-      details: populatedOfficer
+      details: populatedOfficer,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -324,7 +279,7 @@ exports.uploadProfilePicture = async (req, res) => {
 // @access  Private/Officer
 exports.deleteProfilePicture = async (req, res) => {
   try {
-    const officer = await Officer.findOne({ user: req.user.id });
+    const officer = await Officer.findOne({ where: { userId: req.user.id } });
     if (!officer) {
       return res.status(404).json({ success: false, message: 'Officer profile not found' });
     }
@@ -340,12 +295,14 @@ exports.deleteProfilePicture = async (req, res) => {
     officer.profilePicture = '';
     await officer.save();
 
-    const populatedOfficer = await Officer.findById(officer._id).populate('station');
+    const populatedOfficer = await Officer.findByPk(officer.id, {
+      include: [{ model: Location, as: 'station' }],
+    });
 
     res.status(200).json({
       success: true,
       message: 'Profile picture deleted successfully',
-      details: populatedOfficer
+      details: populatedOfficer,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

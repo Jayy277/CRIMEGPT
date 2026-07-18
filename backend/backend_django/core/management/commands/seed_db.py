@@ -128,7 +128,7 @@ class Command(BaseCommand):
 
     # 4. Seed Default Admin with personalized credentials
     self.stdout.write('Seeding default Admin user...')
-    admin_email = 'admin@command.crimepilot.com'
+    admin_email = 'admin@crimepilot.com'
     User.objects.filter(email__iexact=admin_email).delete()
     admin_user = User.objects.create_superuser(
       email=admin_email,
@@ -142,11 +142,11 @@ class Command(BaseCommand):
     
     officers = []
     officer_data = [
-      ('john@field.crimepilot.com', 'Officer John Smith', 'john@1234', 'BADGE-1001', db_locations[0], '9876543210'),
-      ('sarah@field.crimepilot.com', 'Officer Sarah Connor', 'sarah@1234', 'BADGE-1002', db_locations[1], '9876543211'),
-      ('david@field.crimepilot.com', 'Officer David Miller', 'david@1234', 'BADGE-1003', db_locations[3], '9876543212'),
-      ('emily@field.crimepilot.com', 'Officer Emily Watson', 'emily@1234', 'BADGE-1004', db_locations[5], '9876543213'),
-      ('james@field.crimepilot.com', 'Officer James Bond', 'james@1234', 'BADGE-0007', db_locations[6], '9870070070')
+      ('john@crimepilot.com', 'Officer John Smith', 'john@1234', 'BADGE-1001', db_locations[0], '9876543210'),
+      ('sarah@crimepilot.com', 'Officer Sarah Connor', 'sarah@1234', 'BADGE-1002', db_locations[1], '9876543211'),
+      ('david@crimepilot.com', 'Officer David Miller', 'david@1234', 'BADGE-1003', db_locations[3], '9876543212'),
+      ('emily@crimepilot.com', 'Officer Emily Watson', 'emily@1234', 'BADGE-1004', db_locations[5], '9876543213'),
+      ('james@crimepilot.com', 'Officer James Bond', 'james@1234', 'BADGE-0007', db_locations[6], '9870070070')
     ]
     for email, name, password, badge, loc, contact in officer_data:
       user_obj = User.objects.create_user(email=email, name=name, password=password, role='officer')
@@ -155,8 +155,8 @@ class Command(BaseCommand):
 
     # Seed 2 Analysts
     analyst_data = [
-      ('carl@intel.crimepilot.com', 'Analyst Carl Sagan', 'carl@1234', 'Cyber Intelligence Unit'),
-      ('neha@intel.crimepilot.com', 'Analyst Neha Verma', 'neha@1234', 'Forensic Data Division')
+      ('carl@crimepilot.com', 'Analyst Carl Sagan', 'carl@1234', 'Cyber Intelligence Unit'),
+      ('neha@crimepilot.com', 'Analyst Neha Verma', 'neha@1234', 'Forensic Data Division')
     ]
     for email, name, password, dept in analyst_data:
       user_obj = User.objects.create_user(email=email, name=name, password=password, role='analyst')

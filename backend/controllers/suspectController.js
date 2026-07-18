@@ -1,24 +1,35 @@
-const Suspect = require('../models/Suspect');
-const Crime = require('../models/Crime');
+const { Op } = require('sequelize');
+const { Suspect, SuspectPreviousCase, Crime } = require('../models');
 
-// Helper function to link suspect previous cases bidirectionally
+// Helper function to link suspect previous cases bidirectionally in MySQL
 const syncSuspectCases = async (suspectName) => {
   try {
     // Find all suspects with the exact name (case-insensitive)
-    const matches = await Suspect.find({
-      name: { $regex: new RegExp(`^${suspectName}$`, 'i') },
+    const matches = await Suspect.findAll({
+      where: {
+        name: { [Op.like]: suspectName },
+      },
     });
 
-    if (matches.length <= 1) return; // No other matching suspects
+    if (matches.length <= 1) return;
 
-    // Collect all unique crimes associated with this suspect name
-    const allCrimeIds = [...new Set(matches.map(m => String(m.linkedCrime)))];
+    const allCrimeIds = [...new Set(matches.map(m => m.linkedCrimeId))];
 
-    // Update each suspect record to contain all other crime IDs in previousCases
+    // Clear old associations in join table for these suspects
+    const suspectIds = matches.map(m => m.id);
+    await SuspectPreviousCase.destroy({
+      where: { suspectId: { [Op.in]: suspectIds } },
+    });
+
+    // Write new associations
     for (const match of matches) {
-      const otherCrimes = allCrimeIds.filter(id => id !== String(match.linkedCrime));
-      match.previousCases = otherCrimes;
-      await match.save();
+      const otherCrimes = allCrimeIds.filter(id => id !== match.linkedCrimeId);
+      for (const crimeId of otherCrimes) {
+        await SuspectPreviousCase.create({
+          suspectId: match.id,
+          crimeId,
+        });
+      }
     }
   } catch (error) {
     console.error('Error syncing suspect cases:', error.message);
@@ -33,7 +44,7 @@ exports.createSuspect = async (req, res) => {
     const { name, age, gender, address, photoPath, status, linkedCrime } = req.body;
 
     // Verify linked crime case exists
-    const crimeExists = await Crime.findById(linkedCrime);
+    const crimeExists = await Crime.findByPk(linkedCrime);
     if (!crimeExists) {
       return res.status(404).json({ success: false, message: 'Linked crime case not found' });
     }
@@ -45,17 +56,13 @@ exports.createSuspect = async (req, res) => {
       address,
       photoPath: photoPath || '',
       status: status || 'Suspect',
-      linkedCrime,
-      previousCases: [],
+      linkedCrimeId: linkedCrime,
     });
 
-    // Run sync to update previousCases lists for suspects with this name
+    // Run bidirectional cases syncing
     await syncSuspectCases(name);
 
-    // Fetch the updated suspect profile
-    const updatedSuspect = await Suspect.findById(suspect._id).populate('previousCases').populate('linkedCrime');
-
-    res.status(201).json({ success: true, suspect: updatedSuspect });
+    res.status(201).json({ success: true, suspect });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -67,16 +74,20 @@ exports.createSuspect = async (req, res) => {
 exports.getSuspects = async (req, res) => {
   try {
     const { name, status, linkedCrime } = req.query;
-    const filter = {};
+    const where = {};
 
-    if (name) filter.name = { $regex: name, $options: 'i' };
-    if (status) filter.status = status;
-    if (linkedCrime) filter.linkedCrime = linkedCrime;
+    if (name) where.name = { [Op.like]: `%${name}%` };
+    if (status) where.status = status;
+    if (linkedCrime) where.linkedCrimeId = linkedCrime;
 
-    const suspects = await Suspect.find(filter)
-      .populate('linkedCrime')
-      .populate('previousCases')
-      .sort({ createdAt: -1 });
+    const suspects = await Suspect.findAll({
+      where,
+      include: [
+        { model: Crime, as: 'linkedCrime' },
+        { model: Crime, as: 'previousCases', through: { attributes: [] } },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
 
     res.status(200).json({ success: true, count: suspects.length, suspects });
   } catch (error) {
@@ -84,14 +95,17 @@ exports.getSuspects = async (req, res) => {
   }
 };
 
-// @desc    Get suspect by ID
+// @desc    Get single suspect by ID
 // @route   GET /api/suspects/:id
 // @access  Private (Officer, Analyst, Admin)
 exports.getSuspectById = async (req, res) => {
   try {
-    const suspect = await Suspect.findById(req.params.id)
-      .populate('linkedCrime')
-      .populate('previousCases');
+    const suspect = await Suspect.findByPk(req.params.id, {
+      include: [
+        { model: Crime, as: 'linkedCrime' },
+        { model: Crime, as: 'previousCases', through: { attributes: [] } },
+      ],
+    });
 
     if (!suspect) {
       return res.status(404).json({ success: false, message: 'Suspect profile not found' });
@@ -109,7 +123,7 @@ exports.getSuspectById = async (req, res) => {
 exports.updateSuspect = async (req, res) => {
   try {
     const { name, age, gender, address, photoPath, status, linkedCrime } = req.body;
-    const suspect = await Suspect.findById(req.params.id);
+    const suspect = await Suspect.findByPk(req.params.id);
 
     if (!suspect) {
       return res.status(404).json({ success: false, message: 'Suspect profile not found' });
@@ -124,11 +138,11 @@ exports.updateSuspect = async (req, res) => {
     if (photoPath !== undefined) suspect.photoPath = photoPath;
     if (status) suspect.status = status;
     if (linkedCrime) {
-      const crimeExists = await Crime.findById(linkedCrime);
+      const crimeExists = await Crime.findByPk(linkedCrime);
       if (!crimeExists) {
         return res.status(404).json({ success: false, message: 'Linked crime case not found' });
       }
-      suspect.linkedCrime = linkedCrime;
+      suspect.linkedCrimeId = linkedCrime;
     }
 
     await suspect.save();
@@ -138,11 +152,15 @@ exports.updateSuspect = async (req, res) => {
       await syncSuspectCases(oldName);
       await syncSuspectCases(name);
     } else {
-      // Sync in case linkedCrime changed
       await syncSuspectCases(suspect.name);
     }
 
-    const updatedSuspect = await Suspect.findById(suspect._id).populate('previousCases').populate('linkedCrime');
+    const updatedSuspect = await Suspect.findByPk(suspect.id, {
+      include: [
+        { model: Crime, as: 'linkedCrime' },
+        { model: Crime, as: 'previousCases', through: { attributes: [] } },
+      ],
+    });
 
     res.status(200).json({ success: true, suspect: updatedSuspect });
   } catch (error) {
@@ -155,13 +173,17 @@ exports.updateSuspect = async (req, res) => {
 // @access  Private (Officer, Admin)
 exports.deleteSuspect = async (req, res) => {
   try {
-    const suspect = await Suspect.findById(req.params.id);
+    const suspect = await Suspect.findByPk(req.params.id);
     if (!suspect) {
       return res.status(404).json({ success: false, message: 'Suspect profile not found' });
     }
 
     const suspectName = suspect.name;
-    await suspect.deleteOne();
+    const suspectId = suspect.id;
+
+    // Delete associations first
+    await SuspectPreviousCase.destroy({ where: { suspectId } });
+    await suspect.destroy();
 
     // Re-sync to clean up deleted suspect links
     await syncSuspectCases(suspectName);

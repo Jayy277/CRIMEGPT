@@ -40,18 +40,12 @@ class LoginView(APIView):
 
     # Domain-based Role Verification
     email_lower = user.email.lower()
-    if user.role == 'officer':
-      if not email_lower.endswith('@field.crimepilot.com'):
-        return Response({'success': False, 'message': 'Officer login restricted to @field.crimepilot.com accounts.'}, status=status.HTTP_403_FORBIDDEN)
-    elif user.role == 'analyst':
-      if not email_lower.endswith('@intel.crimepilot.com'):
-        return Response({'success': False, 'message': 'Analyst login restricted to @intel.crimepilot.com accounts.'}, status=status.HTTP_403_FORBIDDEN)
-    elif user.role == 'admin':
-      if not email_lower.endswith('@command.crimepilot.com'):
-        return Response({'success': False, 'message': 'Command Division login restricted to @command.crimepilot.com accounts.'}, status=status.HTTP_403_FORBIDDEN)
+    if user.role in ['officer', 'analyst', 'admin']:
+      if not email_lower.endswith('@crimepilot.com'):
+        return Response({'success': False, 'message': 'Staff logins restricted to @crimepilot.com accounts.'}, status=status.HTTP_403_FORBIDDEN)
     elif user.role == 'citizen':
-      if email_lower.endswith('@field.crimepilot.com') or email_lower.endswith('@intel.crimepilot.com') or email_lower.endswith('@command.crimepilot.com'):
-        return Response({'success': False, 'message': 'Citizen accounts cannot use internal CrimePilot domains.'}, status=status.HTTP_403_FORBIDDEN)
+      if email_lower.endswith('@crimepilot.com'):
+        return Response({'success': False, 'message': 'Citizen accounts cannot use @crimepilot.com domain.'}, status=status.HTTP_403_FORBIDDEN)
 
     if not user.is_active:
       return Response({'success': False, 'message': 'Your account is deactivated'}, status=status.HTTP_403_FORBIDDEN)
@@ -115,18 +109,12 @@ class SignupView(APIView):
 
     # Domain validation checks
     email_lower = email.lower()
-    if role == 'officer':
-      if not email_lower.endswith('@field.crimepilot.com'):
-        return Response({'success': False, 'message': 'Officer registration email must end with @field.crimepilot.com'}, status=status.HTTP_400_BAD_REQUEST)
-    elif role == 'analyst':
-      if not email_lower.endswith('@intel.crimepilot.com'):
-        return Response({'success': False, 'message': 'Analyst registration email must end with @intel.crimepilot.com'}, status=status.HTTP_400_BAD_REQUEST)
-    elif role == 'admin':
-      if not email_lower.endswith('@command.crimepilot.com'):
-        return Response({'success': False, 'message': 'Admin registration email must end with @command.crimepilot.com'}, status=status.HTTP_400_BAD_REQUEST)
+    if role in ['officer', 'analyst', 'admin']:
+      if not email_lower.endswith('@crimepilot.com'):
+        return Response({'success': False, 'message': 'Staff registration email must end with @crimepilot.com'}, status=status.HTTP_400_BAD_REQUEST)
     elif role == 'citizen':
-      if email_lower.endswith('@field.crimepilot.com') or email_lower.endswith('@intel.crimepilot.com') or email_lower.endswith('@command.crimepilot.com'):
-        return Response({'success': False, 'message': 'Citizen registration email cannot use internal CrimePilot domains'}, status=status.HTTP_400_BAD_REQUEST)
+      if email_lower.endswith('@crimepilot.com'):
+        return Response({'success': False, 'message': 'Citizen registration email cannot use @crimepilot.com domain'}, status=status.HTTP_400_BAD_REQUEST)
 
 
     user = User.objects.create_user(
@@ -375,10 +363,10 @@ class CitizenSignupView(APIView):
     if User.objects.filter(email__iexact=email).exists():
       return Response({'success': False, 'message': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Domain validation checks (Citizens cannot use internal CrimePilot domains)
+    # Domain validation checks (Citizens cannot use internal domains)
     email_lower = email.lower()
-    if email_lower.endswith('@field.crimepilot.com') or email_lower.endswith('@intel.crimepilot.com') or email_lower.endswith('@command.crimepilot.com'):
-      return Response({'success': False, 'message': 'Citizen registration email cannot use internal CrimePilot domains'}, status=status.HTTP_400_BAD_REQUEST)
+    if email_lower.endswith('@crimepilot.com'):
+      return Response({'success': False, 'message': 'Citizen registration email cannot use @crimepilot.com domain'}, status=status.HTTP_400_BAD_REQUEST)
 
 
     # File validation

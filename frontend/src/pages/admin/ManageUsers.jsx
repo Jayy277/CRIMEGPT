@@ -100,18 +100,8 @@ const ManageUsers = () => {
 
     // Domain validation checks
     const emailLower = email.toLowerCase();
-    if (role === 'officer' && !emailLower.endsWith('@field.crimepilot.com')) {
-      setError('Officer accounts must use mandatory domain @field.crimepilot.com');
-      setSubmitting(false);
-      return;
-    }
-    if (role === 'analyst' && !emailLower.endsWith('@intel.crimepilot.com')) {
-      setError('Analyst accounts must use mandatory domain @intel.crimepilot.com');
-      setSubmitting(false);
-      return;
-    }
-    if (role === 'admin' && !emailLower.endsWith('@command.crimepilot.com')) {
-      setError('Command Division accounts must use mandatory domain @command.crimepilot.com');
+    if (['officer', 'analyst', 'admin'].includes(role) && !emailLower.endsWith('@crimepilot.com')) {
+      setError('Staff accounts must use mandatory domain @crimepilot.com');
       setSubmitting(false);
       return;
     }
@@ -219,18 +209,8 @@ const ManageUsers = () => {
 
     // Domain validation checks
     const emailLower = editEmail.toLowerCase();
-    if (editRole === 'officer' && !emailLower.endsWith('@field.crimepilot.com')) {
-      setError('Officer accounts must use mandatory domain @field.crimepilot.com');
-      setSubmitting(false);
-      return;
-    }
-    if (editRole === 'analyst' && !emailLower.endsWith('@intel.crimepilot.com')) {
-      setError('Analyst accounts must use mandatory domain @intel.crimepilot.com');
-      setSubmitting(false);
-      return;
-    }
-    if (editRole === 'admin' && !emailLower.endsWith('@command.crimepilot.com')) {
-      setError('Command Division accounts must use mandatory domain @command.crimepilot.com');
+    if (['officer', 'analyst', 'admin'].includes(editRole) && !emailLower.endsWith('@crimepilot.com')) {
+      setError('Staff accounts must use mandatory domain @crimepilot.com');
       setSubmitting(false);
       return;
     }

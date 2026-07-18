@@ -47,11 +47,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   // Domain-based route validation (Access Control check matching email domains to roles)
   const emailLower = user.email ? user.email.toLowerCase() : '';
   let domainValid = true;
-  if (user.role === 'officer' && !emailLower.endsWith('@field.crimepilot.com')) domainValid = false;
-  if (user.role === 'analyst' && !emailLower.endsWith('@intel.crimepilot.com')) domainValid = false;
-  if (user.role === 'admin' && !emailLower.endsWith('@command.crimepilot.com')) domainValid = false;
+  if (['officer', 'analyst', 'admin'].includes(user.role)) {
+    if (!emailLower.endsWith('@crimepilot.com')) domainValid = false;
+  }
   if (user.role === 'citizen') {
-    if (emailLower.endsWith('@field.crimepilot.com') || emailLower.endsWith('@intel.crimepilot.com') || emailLower.endsWith('@command.crimepilot.com')) {
+    if (emailLower.endsWith('@crimepilot.com')) {
       domainValid = false;
     }
   }

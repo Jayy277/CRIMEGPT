@@ -1,9 +1,5 @@
-const User = require('../models/User');
-const Officer = require('../models/Officer');
-const Analyst = require('../models/Analyst');
-const Location = require('../models/Location');
-const CrimeCategory = require('../models/CrimeCategory');
-const AuditLog = require('../models/AuditLog');
+const { Op } = require('sequelize');
+const { User, Officer, Analyst, Location, CrimeCategory, CrimeCategorySection, AuditLog } = require('../models');
 
 // ==========================================
 // 1. CRIME CATEGORIES MANAGEMENT
@@ -13,11 +9,24 @@ const AuditLog = require('../models/AuditLog');
 exports.createCategory = async (req, res) => {
   try {
     const { name, sections } = req.body;
-    const categoryExists = await CrimeCategory.findOne({ name });
+    const categoryExists = await CrimeCategory.findOne({ where: { name } });
     if (categoryExists) {
       return res.status(400).json({ success: false, message: 'Category already exists' });
     }
-    const category = await CrimeCategory.create({ name, sections });
+
+    const category = await CrimeCategory.create({ name });
+
+    if (sections && Array.isArray(sections)) {
+      for (const sec of sections) {
+        await CrimeCategorySection.create({
+          categoryId: category.id,
+          act: sec.act,
+          section: sec.section,
+          description: sec.description,
+        });
+      }
+    }
+
     res.status(201).json({ success: true, category });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -27,7 +36,9 @@ exports.createCategory = async (req, res) => {
 // Get all Crime Categories
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await CrimeCategory.find({});
+    const categories = await CrimeCategory.findAll({
+      include: [{ model: CrimeCategorySection, as: 'sections' }],
+    });
     res.status(200).json({ success: true, categories });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -37,7 +48,9 @@ exports.getCategories = async (req, res) => {
 // Get Crime Category by ID
 exports.getCategoryById = async (req, res) => {
   try {
-    const category = await CrimeCategory.findById(req.params.id);
+    const category = await CrimeCategory.findByPk(req.params.id, {
+      include: [{ model: CrimeCategorySection, as: 'sections' }],
+    });
     if (!category) {
       return res.status(404).json({ success: false, message: 'Category not found' });
     }
@@ -51,13 +64,27 @@ exports.getCategoryById = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { name, sections } = req.body;
-    const category = await CrimeCategory.findById(req.params.id);
+    const category = await CrimeCategory.findByPk(req.params.id);
+
     if (!category) {
       return res.status(404).json({ success: false, message: 'Category not found' });
     }
+
     if (name) category.name = name;
-    if (sections) category.sections = sections;
     await category.save();
+
+    if (sections && Array.isArray(sections)) {
+      await CrimeCategorySection.destroy({ where: { categoryId: category.id } });
+      for (const sec of sections) {
+        await CrimeCategorySection.create({
+          categoryId: category.id,
+          act: sec.act,
+          section: sec.section,
+          description: sec.description,
+        });
+      }
+    }
+
     res.status(200).json({ success: true, category });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -67,31 +94,28 @@ exports.updateCategory = async (req, res) => {
 // Delete Crime Category
 exports.deleteCategory = async (req, res) => {
   try {
-    const category = await CrimeCategory.findById(req.params.id);
+    const category = await CrimeCategory.findByPk(req.params.id);
     if (!category) {
       return res.status(404).json({ success: false, message: 'Category not found' });
     }
-    await category.deleteOne();
+    await category.destroy();
     res.status(200).json({ success: true, message: 'Category deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-// Custom Feature A: GET legal sections tied to category
-// This is exposed under /api/crime-categories/:id/sections and /api/admin/crime-categories/:id/sections
+// Custom Feature A helper: Get legal sections
 exports.getCategorySections = async (req, res) => {
   try {
-    const category = await CrimeCategory.findById(req.params.id);
-    if (!category) {
-      return res.status(404).json({ success: false, message: 'Category not found' });
-    }
-    res.status(200).json({ success: true, sections: category.sections });
+    const sections = await CrimeCategorySection.findAll({
+      where: { categoryId: req.params.id },
+    });
+    res.status(200).json({ success: true, count: sections.length, sections });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
 
 // ==========================================
 // 2. LOCATIONS MANAGEMENT
@@ -101,13 +125,12 @@ exports.getCategorySections = async (req, res) => {
 exports.createLocation = async (req, res) => {
   try {
     const { state, district, city, policeStation } = req.body;
-    
-    // Check if duplicate station exists
-    const duplicate = await Location.findOne({ state, district, city, policeStation });
-    if (duplicate) {
-      return res.status(400).json({ success: false, message: 'This location/station already exists' });
+    const locationExists = await Location.findOne({
+      where: { state, district, city, policeStation },
+    });
+    if (locationExists) {
+      return res.status(400).json({ success: false, message: 'Location/Police Station already exists' });
     }
-
     const location = await Location.create({ state, district, city, policeStation });
     res.status(201).json({ success: true, location });
   } catch (error) {
@@ -118,7 +141,7 @@ exports.createLocation = async (req, res) => {
 // Get all Locations
 exports.getLocations = async (req, res) => {
   try {
-    const locations = await Location.find({});
+    const locations = await Location.findAll({});
     res.status(200).json({ success: true, locations });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -128,7 +151,7 @@ exports.getLocations = async (req, res) => {
 // Get Location by ID
 exports.getLocationById = async (req, res) => {
   try {
-    const location = await Location.findById(req.params.id);
+    const location = await Location.findByPk(req.params.id);
     if (!location) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
@@ -142,10 +165,12 @@ exports.getLocationById = async (req, res) => {
 exports.updateLocation = async (req, res) => {
   try {
     const { state, district, city, policeStation } = req.body;
-    const location = await Location.findById(req.params.id);
+    const location = await Location.findByPk(req.params.id);
+
     if (!location) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
+
     if (state) location.state = state;
     if (district) location.district = district;
     if (city) location.city = city;
@@ -161,110 +186,126 @@ exports.updateLocation = async (req, res) => {
 // Delete Location
 exports.deleteLocation = async (req, res) => {
   try {
-    const location = await Location.findById(req.params.id);
+    const location = await Location.findByPk(req.params.id);
     if (!location) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
-    await location.deleteOne();
+    await location.destroy();
     res.status(200).json({ success: true, message: 'Location deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-
 // ==========================================
-// 3. USER MANAGEMENT & SYSTEM USERS SEARCH
+// 3. USER MANAGEMENT (OFFICER & ANALYST)
 // ==========================================
 
-// Get All Users (with role filters, searchable by name/email)
+// Get all Users (Officers and Analysts lists)
 exports.getUsers = async (req, res) => {
   try {
-    const { role, active, search } = req.query;
-    const filter = {};
+    const { role, name, badgeNo, department } = req.query;
 
-    if (role) filter.role = role;
-    if (active) filter.isActive = active === 'true';
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-      ];
+    const userFilters = {};
+    if (name) userFilters.name = { [Op.like]: `%${name}%` };
+
+    if (role) {
+      userFilters.role = role;
+    } else {
+      userFilters.role = { [Op.in]: ['officer', 'analyst'] };
     }
 
-    const users = await User.find(filter);
-    
-    // Map with profile details
-    const usersWithProfiles = await Promise.all(
-      users.map(async (user) => {
-        let details = null;
-        if (user.role === 'officer') {
-          details = await Officer.findOne({ user: user._id }).populate('station');
-        } else if (user.role === 'analyst') {
-          details = await Analyst.findOne({ user: user._id });
-        }
-        return {
-          user,
-          details,
-        };
-      })
-    );
+    const matchedUsers = await User.findAll({ where: userFilters });
+    const userIds = matchedUsers.map(u => u.id);
 
-    res.status(200).json({ success: true, users: usersWithProfiles });
+    let officerResults = [];
+    let analystResults = [];
+
+    if (!role || role === 'officer') {
+      const officerQuery = { userId: { [Op.in]: userIds } };
+      if (badgeNo) officerQuery.badgeNo = { [Op.like]: `%${badgeNo}%` };
+
+      officerResults = await Officer.findAll({
+        where: officerQuery,
+        include: [
+          { model: User, attributes: ['id', 'name', 'email', 'role', 'isActive'] },
+          { model: Location, as: 'station' },
+        ],
+      });
+    }
+
+    if (!role || role === 'analyst') {
+      const analystQuery = { userId: { [Op.in]: userIds } };
+      if (department) analystQuery.department = { [Op.like]: `%${department}%` };
+
+      analystResults = await Analyst.findAll({
+        where: analystQuery,
+        include: [
+          { model: User, attributes: ['id', 'name', 'email', 'role', 'isActive'] },
+        ],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      officers: officerResults,
+      analysts: analystResults,
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-// Update User (User Details & Details of Officer/Analyst)
+// Search Staff (alias for getUsers)
+exports.searchStaff = exports.getUsers;
+
+// Update User details & subprofile
 exports.updateUser = async (req, res) => {
   try {
     const { name, email, isActive, role, badgeNo, station, contact, department } = req.body;
-    const user = await User.findById(req.params.id);
+    const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Update User main details
     if (name) user.name = name;
     if (email) user.email = email;
     if (isActive !== undefined) user.isActive = isActive;
-    
-    // Changing role is permitted but requires cleanup and creation of new profile
+
     const oldRole = user.role;
     if (role && role !== oldRole) {
-      // Deleting old profile records
-      if (oldRole === 'officer') await Officer.deleteOne({ user: user._id });
-      if (oldRole === 'analyst') await Analyst.deleteOne({ user: user._id });
-      
+      // Role changed — delete old subprofile
+      if (oldRole === 'officer') await Officer.destroy({ where: { userId: user.id } });
+      if (oldRole === 'analyst') await Analyst.destroy({ where: { userId: user.id } });
+
       user.role = role;
-      
-      // Creating new profile record
+
+      // Create new subprofile
       if (role === 'officer') {
         await Officer.create({
-          user: user._id,
+          userId: user.id,
           badgeNo: badgeNo || `BADGE-${Date.now()}`,
-          station: station,
+          stationId: station,
           contact: contact || 'N/A',
         });
       } else if (role === 'analyst') {
         await Analyst.create({
-          user: user._id,
+          userId: user.id,
           department: department || 'General Analytics',
         });
       }
     } else {
-      // Role has not changed, just update existing details
+      // Role did not change — update existing subprofile
       if (user.role === 'officer') {
-        const officer = await Officer.findOne({ user: user._id });
+        const officer = await Officer.findOne({ where: { userId: user.id } });
         if (officer) {
           if (badgeNo) officer.badgeNo = badgeNo;
-          if (station) officer.station = station;
+          if (station) officer.stationId = station;
           if (contact) officer.contact = contact;
           await officer.save();
         }
       } else if (user.role === 'analyst') {
-        const analyst = await Analyst.findOne({ user: user._id });
+        const analyst = await Analyst.findOne({ where: { userId: user.id } });
         if (analyst) {
           if (department) analyst.department = department;
           await analyst.save();
@@ -274,19 +315,21 @@ exports.updateUser = async (req, res) => {
 
     await user.save();
 
-    // Fetch updated details to return
     let details = null;
     if (user.role === 'officer') {
-      details = await Officer.findOne({ user: user._id }).populate('station');
+      details = await Officer.findOne({
+        where: { userId: user.id },
+        include: [{ model: Location, as: 'station' }],
+      });
     } else if (user.role === 'analyst') {
-      details = await Analyst.findOne({ user: user._id });
+      details = await Analyst.findOne({ where: { userId: user.id } });
     }
 
     res.status(200).json({
       success: true,
       message: 'User updated successfully',
       user: {
-        _id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -299,16 +342,15 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// Toggle User Status (Activate/Deactivate)
+// Toggle User status
 exports.toggleUserActive = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Cannot deactivate oneself
-    if (String(user._id) === String(req.user._id)) {
+    if (user.id === req.user.id) {
       return res.status(400).json({ success: false, message: 'Cannot activate/deactivate your own account' });
     }
 
@@ -325,78 +367,58 @@ exports.toggleUserActive = async (req, res) => {
   }
 };
 
-// Delete User Profile and User Record
+// Delete User Profile and Record
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (String(user._id) === String(req.user._id)) {
+    if (user.id === req.user.id) {
       return res.status(400).json({ success: false, message: 'Cannot delete your own account' });
     }
 
-    // Delete profiles
-    if (user.role === 'officer') {
-      await Officer.deleteOne({ user: user._id });
-    } else if (user.role === 'analyst') {
-      await Analyst.deleteOne({ user: user._id });
-    }
+    // subprofile rows have foreign keys with Cascade Delete configured in MySQL migrations,
+    // but doing explicit destroy here guarantees cleanup.
+    if (user.role === 'officer') await Officer.destroy({ where: { userId: user.id } });
+    if (user.role === 'analyst') await Analyst.destroy({ where: { userId: user.id } });
 
-    await user.deleteOne();
+    await user.destroy();
     res.status(200).json({ success: true, message: 'User deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-// Search Officers & Analysts (Admin-only)
-exports.searchStaff = async (req, res) => {
+// Update User status (legacy compat)
+exports.updateUserStatus = async (req, res) => {
   try {
-    const { name, role, badgeNo, department } = req.query;
-    
-    let userFilters = {};
-    if (name) userFilters.name = { $regex: name, $options: 'i' };
-    if (role) {
-      userFilters.role = role;
-    } else {
-      userFilters.role = { $in: ['officer', 'analyst'] };
+    const { isActive } = req.body;
+    const user = await User.findByPk(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const matchedUsers = await User.find(userFilters);
-    const userIds = matchedUsers.map(u => u._id);
-
-    let officerResults = [];
-    let analystResults = [];
-
-    if (!role || role === 'officer') {
-      let officerQuery = { user: { $in: userIds } };
-      if (badgeNo) officerQuery.badgeNo = { $regex: badgeNo, $options: 'i' };
-      
-      officerResults = await Officer.find(officerQuery)
-        .populate('user', '-password')
-        .populate('station');
-    }
-
-    if (!role || role === 'analyst') {
-      let analystQuery = { user: { $in: userIds } };
-      if (department) analystQuery.department = { $regex: department, $options: 'i' };
-
-      analystResults = await Analyst.find(analystQuery)
-        .populate('user', '-password');
-    }
+    user.isActive = isActive;
+    await user.save();
 
     res.status(200).json({
       success: true,
-      officers: officerResults,
-      analysts: analystResults,
+      message: `User status successfully updated to ${isActive ? 'Active' : 'Deactivated'}`,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
 
 // ==========================================
 // 4. SYSTEM AUDIT LOGS
@@ -405,14 +427,12 @@ exports.searchStaff = async (req, res) => {
 // Get System Audit Logs
 exports.getAuditLogs = async (req, res) => {
   try {
-    const logs = await AuditLog.find({})
-      .populate({
-        path: 'user',
-        select: 'name email role',
-      })
-      .sort({ timestamp: -1 })
-      .limit(100); // return 100 most recent logs
-    
+    const logs = await AuditLog.findAll({
+      include: [{ model: User, as: 'user', attributes: ['name', 'email', 'role'] }],
+      order: [['timestamp', 'DESC']],
+      limit: 100,
+    });
+
     res.status(200).json({ success: true, logs });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

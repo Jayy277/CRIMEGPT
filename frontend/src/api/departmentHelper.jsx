@@ -1,27 +1,27 @@
 import React from 'react';
 
-export const getDepartmentLabel = (email) => {
-  if (!email) return '';
-  const emailLower = email.toLowerCase();
-  if (emailLower.endsWith('@field.crimepilot.com')) return 'FIELD DIVISION';
-  if (emailLower.endsWith('@intel.crimepilot.com')) return 'INTELLIGENCE DIVISION';
-  if (emailLower.endsWith('@command.crimepilot.com')) return 'COMMAND DIVISION';
+export const getDepartmentLabel = (emailOrRole) => {
+  if (!emailOrRole) return '';
+  const val = emailOrRole.toLowerCase();
+  if (val.includes('officer') || val.includes('field') || val.includes('john') || val.includes('sarah') || val.includes('david') || val.includes('emily') || val.includes('james')) return 'FIELD DIVISION';
+  if (val.includes('analyst') || val.includes('intel') || val.includes('carl') || val.includes('neha')) return 'INTELLIGENCE DIVISION';
+  if (val.includes('admin') || val.includes('command')) return 'COMMAND DIVISION';
   return '';
 };
 
-export const getDepartmentColor = (email) => {
-  if (!email) return '#3B82F6';
-  const emailLower = email.toLowerCase();
-  if (emailLower.endsWith('@field.crimepilot.com')) return '#fbbf24'; // Amber/Gold for Field
-  if (emailLower.endsWith('@intel.crimepilot.com')) return '#06b6d4'; // Cyan for Intel
-  if (emailLower.endsWith('@command.crimepilot.com')) return '#f43f5e'; // Crimson/Rose for Command
+export const getDepartmentColor = (emailOrRole) => {
+  if (!emailOrRole) return '#3B82F6';
+  const val = emailOrRole.toLowerCase();
+  if (val.includes('officer') || val.includes('field') || val.includes('john') || val.includes('sarah') || val.includes('david') || val.includes('emily') || val.includes('james')) return '#fbbf24'; // Amber/Gold for Field
+  if (val.includes('analyst') || val.includes('intel') || val.includes('carl') || val.includes('neha')) return '#06b6d4'; // Cyan for Intel
+  if (val.includes('admin') || val.includes('command')) return '#f43f5e'; // Crimson/Rose for Command
   return '#3B82F6'; // Default Cobalt
 };
 
-export const renderDepartmentBadge = (email, customStyle = {}) => {
-  const label = getDepartmentLabel(email);
+export const renderDepartmentBadge = (emailOrRole, customStyle = {}) => {
+  const label = getDepartmentLabel(emailOrRole);
   if (!label) return null;
-  const color = getDepartmentColor(email);
+  const color = getDepartmentColor(emailOrRole);
   
   return (
     <span

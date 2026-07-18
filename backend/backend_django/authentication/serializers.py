@@ -17,18 +17,14 @@ class UserSerializer(serializers.ModelSerializer):
     if 'profile_picture' in rep:
       rep['profilePicture'] = rep.pop('profile_picture')
       
-    # Dynamic department field based on email domain
-    email = instance.email
-    if email:
-      email_lower = email.lower()
-      if email_lower.endswith('@field.crimepilot.com'):
-        rep['department'] = 'Field Division'
-      elif email_lower.endswith('@intel.crimepilot.com'):
-        rep['department'] = 'Intelligence Division'
-      elif email_lower.endswith('@command.crimepilot.com'):
-        rep['department'] = 'Command Division'
-      else:
-        rep['department'] = None
+    # Dynamic department field based on user role
+    role = instance.role
+    if role == 'officer':
+      rep['department'] = 'Field Division'
+    elif role == 'analyst':
+      rep['department'] = 'Intelligence Division'
+    elif role == 'admin':
+      rep['department'] = 'Command Division'
     else:
       rep['department'] = None
 

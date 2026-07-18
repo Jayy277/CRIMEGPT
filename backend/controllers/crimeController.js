@@ -1,18 +1,13 @@
-const Crime = require('../models/Crime');
-const User = require('../models/User');
-const Officer = require('../models/Officer');
-const Location = require('../models/Location');
-const Suspect = require('../models/Suspect');
-const Notification = require('../models/Notification');
-const CrimeCategory = require('../models/CrimeCategory');
+const { Op } = require('sequelize');
+const { Crime, User, Officer, Location, Suspect, Notification, CrimeCategory, CrimeNote, CrimeSelectedSection } = require('../models');
 
 // Status Progression Order
 const STATUS_ORDER = ['Reported', 'Assigned', 'Under Investigation', 'Evidence Collected', 'Solved', 'Closed'];
 
 // Helper to create notifications
-const createNotification = async (type, recipient, message) => {
+const createNotification = async (type, recipientId, message) => {
   try {
-    await Notification.create({ type, recipient, message });
+    await Notification.create({ type, recipientId, message });
   } catch (error) {
     console.error('Failed to create notification:', error.message);
   }
@@ -26,45 +21,59 @@ exports.registerCrime = async (req, res) => {
     const { crimeCategory, date, time, location, description, officer, priority, sections } = req.body;
 
     // Verify officer exists
-    const officerExists = await Officer.findById(officer).populate('user');
+    const officerExists = await Officer.findByPk(officer, {
+      include: [{ model: User }],
+    });
     if (!officerExists) {
       return res.status(404).json({ success: false, message: 'Officer not found' });
     }
 
     // Verify location exists
-    const locationExists = await Location.findById(location);
+    const locationExists = await Location.findByPk(location);
     if (!locationExists) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
 
     // Create crime case
     const crime = await Crime.create({
-      crimeCategory,
+      categoryId: crimeCategory,
       date,
       time,
-      location,
+      locationId: location,
       description,
-      officer,
+      officerId: officer,
       priority: priority || 'Medium',
-      sections: sections || [],
       status: 'Reported',
-      notes: [],
     });
 
+    // Create assigned sections if provided
+    if (sections && Array.isArray(sections)) {
+      for (const sec of sections) {
+        await CrimeSelectedSection.create({
+          crimeId: crime.id,
+          act: sec.act,
+          section: sec.section,
+          description: sec.description,
+        });
+      }
+    }
+
     // 1. Notify Assigned Officer (New Case Assigned)
-    await createNotification(
-      'New Case Assigned',
-      officerExists.user._id,
-      `You have been assigned to Case: ${crime.crimeId} (${description.substring(0, 40)}...)`
-    );
+    if (officerExists.User) {
+      await createNotification(
+        'New Case Assigned',
+        officerExists.User.id,
+        `You have been assigned to Case: ${crime.crimeId} (${description.substring(0, 40)}...)`
+      );
+    }
 
     // 2. Notify Admins and Assigned Officer if High/Critical Priority
     if (priority === 'High' || priority === 'Critical') {
-      const admins = await User.find({ role: 'admin' });
+      const admins = await User.findAll({ where: { role: 'admin' } });
       const adminPromises = admins.map(admin =>
         createNotification(
           'High Priority Alert',
-          admin._id,
+          admin.id,
           `High Priority Case Created: ${crime.crimeId} assigned to officer ${officerExists.badgeNo}`
         )
       );
@@ -83,47 +92,52 @@ exports.registerCrime = async (req, res) => {
 exports.getCrimes = async (req, res) => {
   try {
     const { crimeId, crimeCategory, location, priority, status, suspectName, search } = req.query;
-    const filter = {};
+    const where = {};
 
     // Exact matching filters
-    if (crimeId) filter.crimeId = { $regex: crimeId, $options: 'i' };
-    if (crimeCategory) filter.crimeCategory = crimeCategory;
-    if (location) filter.location = location;
-    if (priority) filter.priority = priority;
-    if (status) filter.status = status;
+    if (crimeId) where.crimeId = { [Op.like]: `%${crimeId}%` };
+    if (crimeCategory) where.categoryId = crimeCategory;
+    if (location) where.locationId = location;
+    if (priority) where.priority = priority;
+    if (status) where.status = status;
 
     // Search query matches description
     if (search) {
-      filter.description = { $regex: search, $options: 'i' };
+      where.description = { [Op.like]: `%${search}%` };
     }
 
     // Suspect name filtering
     if (suspectName) {
-      // Find suspects with matching name
-      const matchingSuspects = await Suspect.find({
-        name: { $regex: suspectName, $options: 'i' },
+      const matchingSuspects = await Suspect.findAll({
+        where: { name: { [Op.like]: `%${suspectName}%` } },
       });
-      const crimeIds = matchingSuspects.map(s => s.linkedCrime);
-      filter._id = { $in: crimeIds };
+      const crimeIds = matchingSuspects.map(s => s.linkedCrimeId);
+      where.id = { [Op.in]: crimeIds };
     }
 
-    // Role-based scoping for officers: officers can see all, but let's allow general lists
-    // If logged-in user is an officer, and we want to view only their assigned cases:
+    // Role-based scoping for officers
     if (req.user.role === 'officer' && req.query.assignedOnly === 'true') {
-      const officer = await Officer.findOne({ user: req.user._id });
+      const officer = await Officer.findOne({ where: { userId: req.user.id } });
       if (officer) {
-        filter.officer = officer._id;
+        where.officerId = officer.id;
       }
     }
 
-    const crimes = await Crime.find(filter)
-      .populate('crimeCategory')
-      .populate('location')
-      .populate({
-        path: 'officer',
-        populate: { path: 'user', select: 'name email' },
-      })
-      .sort({ createdAt: -1 });
+    const crimes = await Crime.findAll({
+      where,
+      include: [
+        { model: CrimeCategory, as: 'category' },
+        { model: Location, as: 'location' },
+        {
+          model: Officer,
+          as: 'officer',
+          include: [{ model: User, attributes: ['name', 'email'] }],
+        },
+        { model: CrimeSelectedSection, as: 'sections' },
+        { model: CrimeNote, as: 'notes' },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
 
     res.status(200).json({ success: true, count: crimes.length, crimes });
   } catch (error) {
@@ -136,19 +150,24 @@ exports.getCrimes = async (req, res) => {
 // @access  Private (Officer, Analyst, Admin)
 exports.getPendingCrimes = async (req, res) => {
   try {
-    // Pending means status is not 'Solved' and not 'Closed'
-    const pendingCrimes = await Crime.find({
-      status: { $nin: ['Solved', 'Closed'] },
-    })
-      .populate('crimeCategory')
-      .populate('location')
-      .populate({
-        path: 'officer',
-        populate: { path: 'user', select: 'name email' },
-      })
-      .sort({ createdAt: -1 });
+    const pendingCrimes = await Crime.findAll({
+      where: {
+        status: { [Op.notIn]: ['Solved', 'Closed'] },
+      },
+      include: [
+        { model: CrimeCategory, as: 'category' },
+        { model: Location, as: 'location' },
+        {
+          model: Officer,
+          as: 'officer',
+          include: [{ model: User, attributes: ['name', 'email'] }],
+        },
+        { model: CrimeSelectedSection, as: 'sections' },
+        { model: CrimeNote, as: 'notes' },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
 
-    // Every crime document will include the virtual `isPending` (which is true)
     res.status(200).json({
       success: true,
       count: pendingCrimes.length,
@@ -164,14 +183,23 @@ exports.getPendingCrimes = async (req, res) => {
 // @access  Private (Officer, Analyst, Admin)
 exports.getCrimeById = async (req, res) => {
   try {
-    const crime = await Crime.findById(req.params.id)
-      .populate('crimeCategory')
-      .populate('location')
-      .populate({
-        path: 'officer',
-        populate: { path: 'user', select: 'name email' },
-      })
-      .populate('notes.addedBy', 'name email role');
+    const crime = await Crime.findByPk(req.params.id, {
+      include: [
+        { model: CrimeCategory, as: 'category' },
+        { model: Location, as: 'location' },
+        {
+          model: Officer,
+          as: 'officer',
+          include: [{ model: User, attributes: ['name', 'email'] }],
+        },
+        {
+          model: CrimeNote,
+          as: 'notes',
+          include: [{ model: User, attributes: ['name', 'email', 'role'], foreignKey: 'addedById' }],
+        },
+        { model: CrimeSelectedSection, as: 'sections' },
+      ],
+    });
 
     if (!crime) {
       return res.status(404).json({ success: false, message: 'Crime case not found' });
@@ -189,43 +217,56 @@ exports.getCrimeById = async (req, res) => {
 exports.updateCrime = async (req, res) => {
   try {
     const { crimeCategory, date, time, location, description, officer, priority, sections } = req.body;
-    const crime = await Crime.findById(req.params.id);
+    const crime = await Crime.findByPk(req.params.id);
 
     if (!crime) {
       return res.status(404).json({ success: false, message: 'Crime case not found' });
     }
 
-    // Verify user authorization: officers can only edit their own cases
+    // Verify user authorization
     if (req.user.role === 'officer') {
-      const officerRecord = await Officer.findOne({ user: req.user._id });
-      if (!officerRecord || String(crime.officer) !== String(officerRecord._id)) {
+      const officerRecord = await Officer.findOne({ where: { userId: req.user.id } });
+      if (!officerRecord || crime.officerId !== officerRecord.id) {
         return res.status(403).json({ success: false, message: 'Unauthorized. You can only edit cases assigned to you.' });
       }
     }
 
-    if (crimeCategory) crime.crimeCategory = crimeCategory;
+    if (crimeCategory) crime.categoryId = crimeCategory;
     if (date) crime.date = date;
     if (time) crime.time = time;
-    if (location) crime.location = location;
+    if (location) crime.locationId = location;
     if (description) crime.description = description;
     if (officer) {
-      const officerExists = await Officer.findById(officer);
+      const officerExists = await Officer.findByPk(officer);
       if (!officerExists) {
         return res.status(404).json({ success: false, message: 'New assigned officer not found' });
       }
-      // Trigger notification if officer changed
-      if (String(crime.officer) !== String(officer)) {
-        const oldOfficer = await Officer.findById(crime.officer).populate('user');
-        if (oldOfficer) {
-          await createNotification('New Case Assigned', oldOfficer.user._id, `You have been unassigned from Case: ${crime.crimeId}`);
+      if (crime.officerId !== officer) {
+        const oldOfficer = await Officer.findByPk(crime.officerId, { include: [User] });
+        if (oldOfficer && oldOfficer.User) {
+          await createNotification('New Case Assigned', oldOfficer.User.id, `You have been unassigned from Case: ${crime.crimeId}`);
         }
-        crime.officer = officer;
-        const newOfficerUser = await Officer.findById(officer).populate('user');
-        await createNotification('New Case Assigned', newOfficerUser.user._id, `You have been assigned to Case: ${crime.crimeId}`);
+        crime.officerId = officer;
+        const newOfficerUser = await Officer.findByPk(officer, { include: [User] });
+        if (newOfficerUser && newOfficerUser.User) {
+          await createNotification('New Case Assigned', newOfficerUser.User.id, `You have been assigned to Case: ${crime.crimeId}`);
+        }
       }
     }
     if (priority) crime.priority = priority;
-    if (sections) crime.sections = sections;
+
+    // Update sections if provided
+    if (sections && Array.isArray(sections)) {
+      await CrimeSelectedSection.destroy({ where: { crimeId: crime.id } });
+      for (const sec of sections) {
+        await CrimeSelectedSection.create({
+          crimeId: crime.id,
+          act: sec.act,
+          section: sec.section,
+          description: sec.description,
+        });
+      }
+    }
 
     await crime.save();
     res.status(200).json({ success: true, crime });
@@ -240,7 +281,7 @@ exports.updateCrime = async (req, res) => {
 exports.updateCrimeStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const crime = await Crime.findById(req.params.id);
+    const crime = await Crime.findByPk(req.params.id);
 
     if (!crime) {
       return res.status(404).json({ success: false, message: 'Crime case not found' });
@@ -248,13 +289,12 @@ exports.updateCrimeStatus = async (req, res) => {
 
     // Verify authorization
     if (req.user.role === 'officer') {
-      const officerRecord = await Officer.findOne({ user: req.user._id });
-      if (!officerRecord || String(crime.officer) !== String(officerRecord._id)) {
+      const officerRecord = await Officer.findOne({ where: { userId: req.user.id } });
+      if (!officerRecord || crime.officerId !== officerRecord.id) {
         return res.status(403).json({ success: false, message: 'Unauthorized. You can only update status for your assigned cases.' });
       }
     }
 
-    // Status progression flow validation
     const currentIndex = STATUS_ORDER.indexOf(crime.status);
     const targetIndex = STATUS_ORDER.indexOf(status);
 
@@ -262,7 +302,6 @@ exports.updateCrimeStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: `Invalid status. Choose from: ${STATUS_ORDER.join(', ')}` });
     }
 
-    // Enforce sequence: can stay same, or must move to the exact next status
     if (targetIndex !== currentIndex && targetIndex !== currentIndex + 1) {
       return res.status(400).json({
         success: false,
@@ -273,17 +312,19 @@ exports.updateCrimeStatus = async (req, res) => {
     crime.status = status;
     await crime.save();
 
-    // Notify assigned officer of the status progression
-    const officerRecord = await Officer.findById(crime.officer).populate('user');
-    if (officerRecord) {
+    const officerRecord = await Officer.findByPk(crime.officerId, { include: [User] });
+    if (officerRecord && officerRecord.User) {
       await createNotification(
-        'New Case Assigned', // general category update
-        officerRecord.user._id,
+        'New Case Assigned',
+        officerRecord.User.id,
         `Status of Case ${crime.crimeId} updated to: ${status}`
       );
     }
 
-    res.status(200).json({ success: true, status: crime.status, isPending: crime.isPending, crime });
+    // Virtual getter replacement logic: check if status Solved/Closed
+    const isPendingVal = status !== 'Solved' && status !== 'Closed';
+
+    res.status(200).json({ success: true, status: crime.status, isPending: isPendingVal, crime });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -294,8 +335,8 @@ exports.updateCrimeStatus = async (req, res) => {
 // @access  Private (Officer, Admin)
 exports.closeOrSolveCrime = async (req, res) => {
   try {
-    const { status } = req.body; // 'Solved' or 'Closed'
-    const crime = await Crime.findById(req.params.id);
+    const { status } = req.body;
+    const crime = await Crime.findByPk(req.params.id);
 
     if (!crime) {
       return res.status(404).json({ success: false, message: 'Crime case not found' });
@@ -305,10 +346,9 @@ exports.closeOrSolveCrime = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Status must be either Solved or Closed' });
     }
 
-    // Verify authorization
     if (req.user.role === 'officer') {
-      const officerRecord = await Officer.findOne({ user: req.user._id });
-      if (!officerRecord || String(crime.officer) !== String(officerRecord._id)) {
+      const officerRecord = await Officer.findOne({ where: { userId: req.user.id } });
+      if (!officerRecord || crime.officerId !== officerRecord.id) {
         return res.status(403).json({ success: false, message: 'Unauthorized' });
       }
     }
@@ -332,19 +372,19 @@ exports.addCrimeNote = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Note content is required' });
     }
 
-    const crime = await Crime.findById(req.params.id);
+    const crime = await Crime.findByPk(req.params.id);
     if (!crime) {
       return res.status(404).json({ success: false, message: 'Crime case not found' });
     }
 
-    crime.notes.push({
+    const newNote = await CrimeNote.create({
+      crimeId: crime.id,
       note,
-      addedBy: req.user._id,
-      createdAt: new Date(),
+      addedById: req.user.id,
     });
 
-    await crime.save();
-    res.status(200).json({ success: true, notes: crime.notes });
+    const notes = await CrimeNote.findAll({ where: { crimeId: crime.id } });
+    res.status(200).json({ success: true, notes });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -355,11 +395,11 @@ exports.addCrimeNote = async (req, res) => {
 // @access  Private (Admin)
 exports.deleteCrime = async (req, res) => {
   try {
-    const crime = await Crime.findById(req.params.id);
+    const crime = await Crime.findByPk(req.params.id);
     if (!crime) {
       return res.status(404).json({ success: false, message: 'Crime case not found' });
     }
-    await crime.deleteOne();
+    await crime.destroy();
     res.status(200).json({ success: true, message: 'Crime case deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -371,25 +411,29 @@ exports.deleteCrime = async (req, res) => {
 // @access  Private (Officer, Analyst, Admin)
 exports.findSimilarCrimes = async (req, res) => {
   try {
-    const sourceCrime = await Crime.findById(req.params.id)
-      .populate('crimeCategory')
-      .populate('location');
+    const sourceCrime = await Crime.findByPk(req.params.id, {
+      include: [
+        { model: CrimeCategory, as: 'category' },
+        { model: Location, as: 'location' },
+      ],
+    });
 
     if (!sourceCrime) {
       return res.status(404).json({ success: false, message: 'Source crime case not found' });
     }
 
-    // Fetch all other crimes (excluding source itself)
-    const otherCrimes = await Crime.find({ _id: { $ne: sourceCrime._id } })
-      .populate('crimeCategory')
-      .populate('location');
+    const otherCrimes = await Crime.findAll({
+      where: { id: { [Op.ne]: sourceCrime.id } },
+      include: [
+        { model: CrimeCategory, as: 'category' },
+        { model: Location, as: 'location' },
+      ],
+    });
 
-    // Parse description of source into keywords to match
-    // Filter out simple stopwords to improve keyword search relevance
     const stopWords = new Set(['the', 'and', 'a', 'of', 'in', 'on', 'at', 'with', 'for', 'by', 'an', 'to', 'was', 'were', 'had', 'been', 'is', 'are']);
     const sourceKeywords = sourceCrime.description
       .toLowerCase()
-      .replace(/[^\w\s]/g, '') // remove punctuation
+      .replace(/[^\w\s]/g, '')
       .split(/\s+/)
       .filter(w => w.length > 3 && !stopWords.has(w));
 
@@ -397,33 +441,21 @@ exports.findSimilarCrimes = async (req, res) => {
       let score = 0;
       const reasons = [];
 
-      // 1. Match Crime Category (Weight: 5)
-      if (String(targetCrime.crimeCategory._id) === String(sourceCrime.crimeCategory._id)) {
+      if (targetCrime.categoryId === sourceCrime.categoryId) {
         score += 5;
-        reasons.push(`Same crime type (${sourceCrime.crimeCategory.name})`);
+        reasons.push(`Same crime type (${sourceCrime.category.name})`);
       }
 
-      // 2. Match Location:
-      // Station level (Weight: 4)
-      if (
-        targetCrime.location.policeStation.toLowerCase() === sourceCrime.location.policeStation.toLowerCase() &&
-        targetCrime.location.city.toLowerCase() === sourceCrime.location.city.toLowerCase()
-      ) {
-        score += 4;
-        reasons.push(`Same police station jurisdiction (${sourceCrime.location.policeStation})`);
-      } 
-      // City level (Weight: 3)
-      else if (targetCrime.location.city.toLowerCase() === sourceCrime.location.city.toLowerCase()) {
-        score += 3;
-        reasons.push(`Same city (${sourceCrime.location.city})`);
-      } 
-      // District level (Weight: 2)
-      else if (targetCrime.location.district.toLowerCase() === sourceCrime.location.district.toLowerCase()) {
-        score += 2;
-        reasons.push(`Same district (${sourceCrime.location.district})`);
+      if (targetCrime.location && sourceCrime.location) {
+        if (targetCrime.location.policeStation.toLowerCase() === sourceCrime.location.policeStation.toLowerCase()) {
+          score += 4;
+          reasons.push(`Same police station jurisdiction (${sourceCrime.location.policeStation})`);
+        } else if (targetCrime.location.city.toLowerCase() === sourceCrime.location.city.toLowerCase()) {
+          score += 3;
+          reasons.push(`Same city (${sourceCrime.location.city})`);
+        }
       }
 
-      // 3. Proximity of Dates (Weight: 3 for 30 days, 1 for 90 days)
       const daysDiff = Math.abs((new Date(targetCrime.date) - new Date(sourceCrime.date)) / (1000 * 60 * 60 * 24));
       if (daysDiff <= 30) {
         score += 3;
@@ -433,7 +465,6 @@ exports.findSimilarCrimes = async (req, res) => {
         reasons.push(`Date proximity within 90 days (${Math.round(daysDiff)} days apart)`);
       }
 
-      // 4. Description Keyword Match (Weight: 1 per matched keyword, max 4)
       const targetDescLower = targetCrime.description.toLowerCase();
       let matchedWordCount = 0;
       const matchedWords = [];
@@ -449,7 +480,7 @@ exports.findSimilarCrimes = async (req, res) => {
       }
 
       if (matchedWordCount > 0) {
-        reasons.push(`Similar details matching keywords: ${matchedWords.slice(0, 3).join(', ')}${matchedWords.length > 3 ? '...' : ''}`);
+        reasons.push(`Similar details matching keywords: ${matchedWords.slice(0, 3).join(', ')}`);
       }
 
       return {
@@ -458,9 +489,9 @@ exports.findSimilarCrimes = async (req, res) => {
         similarityReasons: reasons,
       };
     })
-    .filter(item => item.similarityScore > 0) // only return items with positive similarity score
-    .sort((a, b) => b.similarityScore - a.similarityScore) // sort descending
-    .slice(0, 10); // return top 10 matches
+    .filter(item => item.similarityScore > 0)
+    .sort((a, b) => b.similarityScore - a.similarityScore)
+    .slice(0, 10);
 
     res.status(200).json({
       success: true,

@@ -1,5 +1,5 @@
-const Victim = require('../models/Victim');
-const Crime = require('../models/Crime');
+const { Op } = require('sequelize');
+const { Victim, Crime } = require('../models');
 
 // @desc    Create a victim profile linked to a case
 // @route   POST /api/victims
@@ -9,7 +9,7 @@ exports.createVictim = async (req, res) => {
     const { name, contact, statement, evidenceReference, linkedCrime } = req.body;
 
     // Verify linked crime case exists
-    const crimeExists = await Crime.findById(linkedCrime);
+    const crimeExists = await Crime.findByPk(linkedCrime);
     if (!crimeExists) {
       return res.status(404).json({ success: false, message: 'Linked crime case not found' });
     }
@@ -19,7 +19,7 @@ exports.createVictim = async (req, res) => {
       contact,
       statement,
       evidenceReference: evidenceReference || '',
-      linkedCrime,
+      linkedCrimeId: linkedCrime,
     });
 
     res.status(201).json({ success: true, victim });
@@ -34,14 +34,16 @@ exports.createVictim = async (req, res) => {
 exports.getVictims = async (req, res) => {
   try {
     const { name, linkedCrime } = req.query;
-    const filter = {};
+    const where = {};
 
-    if (name) filter.name = { $regex: name, $options: 'i' };
-    if (linkedCrime) filter.linkedCrime = linkedCrime;
+    if (name) where.name = { [Op.like]: `%${name}%` };
+    if (linkedCrime) where.linkedCrimeId = linkedCrime;
 
-    const victims = await Victim.find(filter)
-      .populate('linkedCrime')
-      .sort({ createdAt: -1 });
+    const victims = await Victim.findAll({
+      where,
+      include: [{ model: Crime, as: 'linkedCrime' }],
+      order: [['createdAt', 'DESC']],
+    });
 
     res.status(200).json({ success: true, count: victims.length, victims });
   } catch (error) {
@@ -54,7 +56,9 @@ exports.getVictims = async (req, res) => {
 // @access  Private (Officer, Analyst, Admin)
 exports.getVictimById = async (req, res) => {
   try {
-    const victim = await Victim.findById(req.params.id).populate('linkedCrime');
+    const victim = await Victim.findByPk(req.params.id, {
+      include: [{ model: Crime, as: 'linkedCrime' }],
+    });
     if (!victim) {
       return res.status(404).json({ success: false, message: 'Victim record not found' });
     }
@@ -70,7 +74,7 @@ exports.getVictimById = async (req, res) => {
 exports.updateVictim = async (req, res) => {
   try {
     const { name, contact, statement, evidenceReference, linkedCrime } = req.body;
-    const victim = await Victim.findById(req.params.id);
+    const victim = await Victim.findByPk(req.params.id);
 
     if (!victim) {
       return res.status(404).json({ success: false, message: 'Victim record not found' });
@@ -81,11 +85,11 @@ exports.updateVictim = async (req, res) => {
     if (statement) victim.statement = statement;
     if (evidenceReference !== undefined) victim.evidenceReference = evidenceReference;
     if (linkedCrime) {
-      const crimeExists = await Crime.findById(linkedCrime);
+      const crimeExists = await Crime.findByPk(linkedCrime);
       if (!crimeExists) {
         return res.status(404).json({ success: false, message: 'Linked crime case not found' });
       }
-      victim.linkedCrime = linkedCrime;
+      victim.linkedCrimeId = linkedCrime;
     }
 
     await victim.save();
@@ -100,11 +104,11 @@ exports.updateVictim = async (req, res) => {
 // @access  Private (Officer, Admin)
 exports.deleteVictim = async (req, res) => {
   try {
-    const victim = await Victim.findById(req.params.id);
+    const victim = await Victim.findByPk(req.params.id);
     if (!victim) {
       return res.status(404).json({ success: false, message: 'Victim record not found' });
     }
-    await victim.deleteOne();
+    await victim.destroy();
     res.status(200).json({ success: true, message: 'Victim record deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

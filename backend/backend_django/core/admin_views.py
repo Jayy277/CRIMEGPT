@@ -70,18 +70,12 @@ class AdminUserDetailView(APIView):
     target_role = role if role else user.role
     target_email = email if email else user.email
     email_lower = target_email.lower()
-    if target_role == 'officer':
-      if not email_lower.endswith('@field.crimepilot.com'):
-        return Response({'success': False, 'message': 'Officer accounts must use mandatory domain @field.crimepilot.com'}, status=status.HTTP_400_BAD_REQUEST)
-    elif target_role == 'analyst':
-      if not email_lower.endswith('@intel.crimepilot.com'):
-        return Response({'success': False, 'message': 'Analyst accounts must use mandatory domain @intel.crimepilot.com'}, status=status.HTTP_400_BAD_REQUEST)
-    elif target_role == 'admin':
-      if not email_lower.endswith('@command.crimepilot.com'):
-        return Response({'success': False, 'message': 'Command Division accounts must use mandatory domain @command.crimepilot.com'}, status=status.HTTP_400_BAD_REQUEST)
+    if target_role in ['officer', 'analyst', 'admin']:
+      if not email_lower.endswith('@crimepilot.com'):
+        return Response({'success': False, 'message': 'Staff accounts must use mandatory domain @crimepilot.com'}, status=status.HTTP_400_BAD_REQUEST)
     elif target_role == 'citizen':
-      if email_lower.endswith('@field.crimepilot.com') or email_lower.endswith('@intel.crimepilot.com') or email_lower.endswith('@command.crimepilot.com'):
-        return Response({'success': False, 'message': 'Citizen accounts cannot use internal CrimePilot domains'}, status=status.HTTP_400_BAD_REQUEST)
+      if email_lower.endswith('@crimepilot.com'):
+        return Response({'success': False, 'message': 'Citizen accounts cannot use @crimepilot.com domain'}, status=status.HTTP_400_BAD_REQUEST)
 
 
     if name: user.name = name
