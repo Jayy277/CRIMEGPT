@@ -5,6 +5,8 @@ const sequelize = require('../config/db');
 const User                  = require('./User');
 const Location              = require('./Location');
 const Officer               = require('./Officer');
+const Citizen               = require('./Citizen');
+const DjangoUser            = require('./DjangoUser');
 const { CrimeCategory, CrimeCategorySection } = require('./CrimeCategory');
 const { Crime, CrimeNote, CrimeSelectedSection } = require('./Crime');
 const Evidence              = require('./Evidence');
@@ -20,6 +22,9 @@ User.hasOne(Analyst,   { foreignKey: 'userId', as: 'analystProfile' });
 Officer.belongsTo(User,     { foreignKey: 'userId' });
 Analyst.belongsTo(User,     { foreignKey: 'userId' });
 Officer.belongsTo(Location, { foreignKey: 'stationId', as: 'station' });
+
+// Django-managed citizen tables (read-only from Node side)
+Citizen.belongsTo(DjangoUser, { foreignKey: 'user_id', as: 'user' });
 
 CrimeCategory.hasMany(Crime,     { foreignKey: 'categoryId', as: 'crimes' });
 Crime.belongsTo(CrimeCategory,   { foreignKey: 'categoryId', as: 'category' });
@@ -58,6 +63,7 @@ module.exports = {
   sequelize,
   syncDatabase,
   User, Location, Officer, Analyst,
+  Citizen, DjangoUser,
   CrimeCategory, CrimeCategorySection,
   Crime, CrimeNote, CrimeSelectedSection,
   Evidence,

@@ -16,7 +16,9 @@ const {
   toggleUserActive,
   deleteUser,
   searchStaff,
-  getAuditLogs
+  getAuditLogs,
+  getCitizens,
+  verifyCitizen,
 } = require('../controllers/adminController');
 const { protect, restrictTo } = require('../middleware/authMiddleware');
 
@@ -50,5 +52,9 @@ router.delete('/users/:id', restrictTo('admin'), deleteUser);
 
 router.get('/staff-search', restrictTo('admin'), searchStaff);
 router.get('/logs', restrictTo('admin'), getAuditLogs);
+
+// Citizens verification
+router.get('/citizens', restrictTo('admin'), getCitizens);
+router.post('/citizens/:id/verify', restrictTo('admin'), verifyCitizen);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { User, Officer, Analyst, Location, CrimeCategory, CrimeCategorySection, AuditLog, Crime } = require('../models');
+const { User, Officer, Analyst, Location, CrimeCategory, CrimeCategorySection, AuditLog, Crime, Citizen, DjangoUser } = require('../models');
 
 // ==========================================
 // 1. CRIME CATEGORIES MANAGEMENT
@@ -243,7 +243,7 @@ exports.getUsers = async (req, res) => {
     if (role) {
       userFilters.role = role;
     } else {
-      userFilters.role = { [Op.in]: ['officer', 'analyst'] };
+      userFilters.role = { [Op.in]: ['officer', 'analyst', 'admin'] };
     }
 
     const matchedUsers = await User.findAll({ where: userFilters });
@@ -251,34 +251,97 @@ exports.getUsers = async (req, res) => {
 
     let officerResults = [];
     let analystResults = [];
+    let adminResults = [];
 
-    if (!role || role === 'officer') {
-      const officerQuery = { userId: { [Op.in]: userIds } };
-      if (badgeNo) officerQuery.badgeNo = { [Op.like]: `%${badgeNo}%` };
+    // Only query sub-profiles if there are matching users
+    if (userIds.length > 0) {
+      if (!role || role === 'officer') {
+        const officerQuery = { userId: { [Op.in]: userIds } };
+        if (badgeNo) officerQuery.badgeNo = { [Op.like]: `%${badgeNo}%` };
 
-      officerResults = await Officer.findAll({
-        where: officerQuery,
-        include: [
-          { model: User, attributes: ['id', 'name', 'email', 'role', 'isActive'] },
-          { model: Location, as: 'station' },
-        ],
-      });
+        officerResults = await Officer.findAll({
+          where: officerQuery,
+          include: [
+            { model: User, attributes: ['id', 'name', 'email', 'role', 'isActive'] },
+            { model: Location, as: 'station' },
+          ],
+        });
+      }
+
+      if (!role || role === 'analyst') {
+        const analystQuery = { userId: { [Op.in]: userIds } };
+        if (department) analystQuery.department = { [Op.like]: `%${department}%` };
+
+        analystResults = await Analyst.findAll({
+          where: analystQuery,
+          include: [
+            { model: User, attributes: ['id', 'name', 'email', 'role', 'isActive'] },
+          ],
+        });
+      }
+
+      if (!role || role === 'admin') {
+        adminResults = matchedUsers.filter(u => u.role === 'admin');
+      }
     }
 
-    if (!role || role === 'analyst') {
-      const analystQuery = { userId: { [Op.in]: userIds } };
-      if (department) analystQuery.department = { [Op.like]: `%${department}%` };
+    // Build unified users array with consistent shape: { user, details }
+    const users = [];
 
-      analystResults = await Analyst.findAll({
-        where: analystQuery,
-        include: [
-          { model: User, attributes: ['id', 'name', 'email', 'role', 'isActive'] },
-        ],
+    officerResults.forEach(officer => {
+      // Guard: skip orphaned officer rows with no associated User
+      if (!officer.User) return;
+      users.push({
+        user: {
+          _id: officer.User.id,
+          name: officer.User.name,
+          email: officer.User.email,
+          role: officer.User.role,
+          isActive: officer.User.isActive,
+        },
+        details: {
+          badgeNo: officer.badgeNo,
+          station: officer.station,
+          contact: officer.contact,
+        },
       });
-    }
+    });
+
+    analystResults.forEach(analyst => {
+      // Guard: skip orphaned analyst rows with no associated User
+      if (!analyst.User) return;
+      users.push({
+        user: {
+          _id: analyst.User.id,
+          name: analyst.User.name,
+          email: analyst.User.email,
+          role: analyst.User.role,
+          isActive: analyst.User.isActive,
+        },
+        details: {
+          department: analyst.department,
+        },
+      });
+    });
+
+    adminResults.forEach(admin => {
+      users.push({
+        user: {
+          _id: admin.id,
+          name: admin.name,
+          email: admin.email,
+          role: admin.role,
+          isActive: admin.isActive,
+        },
+        details: null,
+      });
+    });
+
+    console.log(`[getUsers] returning ${users.length} users (${officerResults.length} officers, ${analystResults.length} analysts, ${adminResults.length} admins)`);
 
     res.status(200).json({
       success: true,
+      users,
       officers: officerResults,
       analysts: analystResults,
     });
@@ -465,6 +528,57 @@ exports.getAuditLogs = async (req, res) => {
     });
 
     res.status(200).json({ success: true, logs });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ==========================================
+// 5. CITIZEN MANAGEMENT
+// ==========================================
+
+// Get all Citizens (reads from Django-managed authentication_citizen table)
+exports.getCitizens = async (req, res) => {
+  try {
+    const citizens = await Citizen.findAll({
+      include: [
+        {
+          model: DjangoUser,
+          as: 'user',
+          attributes: ['id', 'name', 'email', 'is_active'],
+        },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    res.status(200).json({ success: true, citizens });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// Verify / Reject a Citizen (updates status in authentication_citizen)
+exports.verifyCitizen = async (req, res) => {
+  try {
+    const { action } = req.body; // 'verify' or 'reject'
+    const citizen = await Citizen.findByPk(req.params.id);
+
+    if (!citizen) {
+      return res.status(404).json({ success: false, message: 'Citizen not found' });
+    }
+
+    if (!['verify', 'reject'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Action must be "verify" or "reject"' });
+    }
+
+    citizen.status = action === 'verify' ? 'verified' : 'rejected';
+    await citizen.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Citizen ${action === 'verify' ? 'verified' : 'rejected'} successfully`,
+      citizen,
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
