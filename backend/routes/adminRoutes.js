@@ -11,6 +11,7 @@ const {
   getLocationById,
   updateLocation,
   deleteLocation,
+  toggleLocationActive,
   getUsers,
   updateUser,
   toggleUserActive,
@@ -44,6 +45,7 @@ router.delete('/crime-categories/:id', restrictTo('admin'), deleteCategory);
 router.post('/locations', restrictTo('admin'), createLocation);
 router.put('/locations/:id', restrictTo('admin'), updateLocation);
 router.delete('/locations/:id', restrictTo('admin'), deleteLocation);
+router.patch('/locations/:id/toggle-active', restrictTo('admin'), toggleLocationActive);
 
 router.get('/users', restrictTo('admin'), getUsers);
 router.put('/users/:id', restrictTo('admin'), updateUser);

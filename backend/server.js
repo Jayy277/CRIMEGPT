@@ -71,7 +71,7 @@ const PORT = process.env.PORT || 5000;
 
 // Connect MySQL and sync tables BEFORE starting server
 syncDatabase().then(() => {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT} [MySQL mode]`);
   });
 });

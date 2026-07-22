@@ -69,19 +69,25 @@ const Locations = () => {
     }
   };
 
-  // Delete Location
-  const handleDeleteLocation = async (locId, stationName) => {
+  // Toggle Location Active / Inactive
+  const handleToggleLocation = async (locId, stationName, currentlyActive) => {
     setError('');
     setSuccess('');
     try {
-      const res = await axiosInstance.delete(`/admin/locations/${locId}`);
+      const res = await axiosInstance.patch(`/admin/locations/${locId}/toggle-active`);
       if (res.data && res.data.success) {
-        setSuccess(`Location "${stationName}" deactivated successfully.`);
-        setLocations(prev => prev.map(l => (l._id === locId || l.id === locId) ? { ...l, isActive: false } : l));
+        setSuccess(res.data.message);
+        setLocations(prev =>
+          prev.map(l =>
+            (l._id === locId || l.id === locId)
+              ? { ...l, isActive: res.data.isActive }
+              : l
+          )
+        );
       }
     } catch (err) {
-      console.error('Error deleting location:', err);
-      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to delete location.');
+      console.error('Error toggling location status:', err);
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to update station status.');
     }
   };
 
@@ -272,18 +278,16 @@ const Locations = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteLocation(loc._id || loc.id, loc.policeStation)}
+                          onClick={() => handleToggleLocation(loc._id || loc.id, loc.policeStation, loc.isActive)}
                           className="btn btn-secondary"
-                          disabled={loc.isActive === false}
                           style={{
                             fontSize: '11px',
                             padding: '4px 8px',
-                            color: loc.isActive === false ? '#64748b' : '#f43f5e',
-                            borderColor: loc.isActive === false ? 'rgba(100,116,139,0.1)' : 'rgba(244,63,94,0.1)',
-                            cursor: loc.isActive === false ? 'not-allowed' : 'pointer'
+                            color: loc.isActive === false ? '#10b981' : '#f43f5e',
+                            borderColor: loc.isActive === false ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.1)',
                           }}
                         >
-                          {loc.isActive === false ? 'Deactivated' : 'Deactivate'}
+                          {loc.isActive === false ? 'Activate' : 'Deactivate'}
                         </button>
                       </div>
                     </td>

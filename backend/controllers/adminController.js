@@ -228,6 +228,44 @@ exports.deleteLocation = async (req, res) => {
   }
 };
 
+// Toggle Location Active / Inactive
+exports.toggleLocationActive = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const location = await Location.findByPk(id);
+    if (!location) {
+      return res.status(404).json({ success: false, message: 'Location not found' });
+    }
+
+    // If trying to deactivate, block if active cases exist
+    if (location.isActive) {
+      const activeCasesCount = await Crime.count({
+        where: {
+          locationId: id,
+          status: { [Op.notIn]: ['Solved', 'Closed'] }
+        }
+      });
+      if (activeCasesCount > 0) {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot deactivate. ${activeCasesCount} active case(s) assigned to this station.`
+        });
+      }
+    }
+
+    location.isActive = !location.isActive;
+    await location.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Station ${location.isActive ? 'activated' : 'deactivated'} successfully.`,
+      isActive: location.isActive,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 // ==========================================
 // 3. USER MANAGEMENT (OFFICER & ANALYST)
 // ==========================================
@@ -336,8 +374,6 @@ exports.getUsers = async (req, res) => {
         details: null,
       });
     });
-
-    console.log(`[getUsers] returning ${users.length} users (${officerResults.length} officers, ${analystResults.length} analysts, ${adminResults.length} admins)`);
 
     res.status(200).json({
       success: true,

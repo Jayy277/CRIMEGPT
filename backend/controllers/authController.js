@@ -191,8 +191,6 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save();
 
-    console.log(`Password reset token for ${user.email}: ${resetToken}`);
-
     res.status(200).json({
       success: true,
       message: 'Token generated and printed to console / returned in response',
