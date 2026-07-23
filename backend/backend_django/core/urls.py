@@ -14,6 +14,7 @@ from .admin_views import (
   AdminUsersListView, AdminUserDetailView, AdminUserToggleActiveView, 
   AdminStaffSearchView, AdminSystemLogsView
 )
+from .ai_views import AIChatView
 
 router = DefaultRouter(trailing_slash=False) # Keep URL compatibility matching Express paths
 
@@ -31,6 +32,9 @@ router.register('admin/locations', LocationViewSet, basename='admin-locations')
 
 urlpatterns = [
   path('', include(router.urls)),
+
+  # AI Assistant Conversational Endpoint
+  path('ai/chat', AIChatView.as_view(), name='ai_chat'),
 
   # Notification endpoints
   path('notifications', NotificationViewSet.as_view({'get': 'list'}), name='notifications_list'),

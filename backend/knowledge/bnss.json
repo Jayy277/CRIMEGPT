@@ -1,0 +1,46 @@
+[
+  {
+    "id": "bnss_173",
+    "act": "Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)",
+    "section": "Section 173",
+    "title": "Information in Cognizable Cases (FIR)",
+    "category": "FIR & Investigation Procedure",
+    "description": "Every information relating to the commission of a cognizable offence, if given orally to an officer in charge of a police station, shall be reduced to writing. Section 173 BNSS governs the registration of a First Information Report (FIR). It permits filing an electronic FIR (e-FIR) and Zero FIR irrespective of territorial jurisdiction.",
+    "punishment": "Procedural section mandating police duty to record complaints for cognizable offences.",
+    "keywords": ["fir", "first information report", "file fir", "how to file fir", "register fir", "zero fir", "efir", "electronic fir", "cognizable offence"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bnss_35",
+    "act": "Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)",
+    "section": "Section 35",
+    "title": "Arrest by Police Officer and Notice of Appearance",
+    "category": "Arrest Procedure & Civil Rights",
+    "description": "Outlines circumstances under which police officers may arrest without warrant for cognizable offences punishable with 7 years or less. Mandates issuing a Notice of Appearance (Section 35(3) BNSS) before arrest unless arrest is necessary to prevent further offence or tampering of evidence.",
+    "punishment": "Procedural protections against arbitrary arrest.",
+    "keywords": ["arrest", "police arrest", "notice of appearance", "arrest without warrant", "bail rights", "police questioning"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bnss_478",
+    "act": "Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)",
+    "section": "Section 478 / Section 480",
+    "title": "Bail Provisions for Bailable and Non-Bailable Offences",
+    "category": "Bail & Custody",
+    "description": "Governs release of accused persons on bail. For bailable offences, bail is a matter of right. For non-bailable offences, bail is subject to judicial discretion based on nature of crime, severity of punishment, and likelihood of absconding.",
+    "punishment": "Procedural provision for release on bond.",
+    "keywords": ["bail", "anticipatory bail", "bailable offence", "non bailable", "get bail", "police custody"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bnss_176",
+    "act": "Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)",
+    "section": "Section 176",
+    "title": "Forensic Investigation Requirement for Offences Punishable with 7+ Years",
+    "category": "Investigation & Forensics",
+    "description": "Mandates that for offences punishable with imprisonment for seven years or more, the officer in charge shall cause a forensic expert to visit the crime scene to collect evidence and videograph the process.",
+    "punishment": "Mandatory forensic collection for serious offences.",
+    "keywords": ["forensic", "crime scene", "investigation procedure", "forensic report", "video recording crime scene"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "cp_file_fir",
+    "act": "CrimePilot Platform Service",
+    "section": "Digital FIR Module",
+    "title": "How to File a Digital FIR on CrimePilot",
+    "category": "Platform Guidance",
+    "description": "To file a Digital FIR on CrimePilot:\n1. Log in to the Citizen Portal (/citizen/login) or Register an account.\n2. Navigate to 'Register FIR' (/citizen/register-fir).\n3. Fill in complaint details including incident date, time, crime category, location, and description.\n4. Attach supporting documents or evidence files.\n5. Click Submit. Your FIR will be automatically logged and routed to the jurisdiction Police Station for investigation officer assignment.",
+    "punishment": "Digital platform feature for citizen convenience.",
+    "keywords": ["crimepilot fir", "how to file fir on crimepilot", "register fir crimepilot", "online fir crimepilot"],
+    "source_url": "http://localhost:3000/citizen/register-fir"
+  },
+  {
+    "id": "cp_find_station",
+    "act": "CrimePilot Platform Service",
+    "section": "Police Station & Location Directory",
+    "title": "How to Find Police Stations on CrimePilot",
+    "category": "Platform Guidance",
+    "description": "To locate registered police stations and jurisdictional precincts:\n1. Access the Locations Directory on CrimePilot (/admin/locations or via homepage radar panel).\n2. View active police stations by State, District, and City.\n3. Check jurisdiction details and assigned incident controllers.",
+    "punishment": "Platform jurisdictional navigation.",
+    "keywords": ["find police station", "police station directory", "nearest station", "crimepilot locations"],
+    "source_url": "http://localhost:3000/admin/locations"
+  },
+  {
+    "id": "cp_track_case",
+    "act": "CrimePilot Platform Service",
+    "section": "FIR Tracking & Status Workspace",
+    "title": "How to Track Your FIR Status on CrimePilot",
+    "category": "Platform Guidance",
+    "description": "To track the live progress of your reported case:\n1. Log in to your Citizen Dashboard (/citizen/dashboard).\n2. Go to 'Track FIR Cases' (/citizen/track-fir).\n3. View real-time status progression (Reported → Assigned → Under Investigation → Evidence Collected → Solved → Closed) and assigned officer notes.",
+    "punishment": "Real-time case progression tracking.",
+    "keywords": ["track fir", "fir status", "case status", "check my case", "crimepilot track"],
+    "source_url": "http://localhost:3000/citizen/track-fir"
+  }
+]

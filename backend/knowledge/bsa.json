@@ -1,0 +1,24 @@
+[
+  {
+    "id": "bsa_63",
+    "act": "Bharatiya Sakshya Adhiniyam, 2023 (BSA)",
+    "section": "Section 63",
+    "title": "Admissibility of Electronic Records and Digital Certificates",
+    "category": "Evidence & Digital Proof",
+    "description": "Governs the admissibility of electronic or digital records in court (replaces Section 65B of Indian Evidence Act). Mandates a Certificate under Section 63 BSA signed by a person in charge of the computer device/system certifying the authenticity, hash value, and integrity of digital evidence.",
+    "punishment": "Evidentiary standard for legal proof of emails, WhatsApp chats, CCTV footage, call recordings, and server logs.",
+    "keywords": ["electronic evidence", "digital evidence", "whatsapp chat court proof", "cctv footage proof", "call recording proof", "bsa 63", "65b certificate", "screenshot court evidence"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bsa_57",
+    "act": "Bharatiya Sakshya Adhiniyam, 2023 (BSA)",
+    "section": "Section 57",
+    "title": "Primary Evidence",
+    "category": "Evidence Standards",
+    "description": "Primary evidence means the document itself produced for the inspection of the Court. Includes electronic records stored in original media or multiple simultaneous copies.",
+    "punishment": "Evidentiary requirement.",
+    "keywords": ["primary evidence", "original document", "original video", "original file"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  }
+]

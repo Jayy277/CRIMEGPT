@@ -1,0 +1,46 @@
+[
+  {
+    "id": "proc_vehicle_theft",
+    "act": "Police & Motor Vehicle Incident Procedure",
+    "section": "Standard Vehicle Theft Action Protocol",
+    "title": "What To Do If Your Vehicle (Bike / Car) Is Stolen",
+    "category": "Practical Step-by-Step Guidance",
+    "description": "Recommended steps upon vehicle theft:\n1. Report promptly to nearest Police Station or register e-FIR.\n2. Obtain a copy of the FIR (required for insurance claim).\n3. Inform your motor insurance company immediately.\n4. Inform RTO (Regional Transport Office) to block vehicle transfer.\n5. Check nearby CCTV cameras and note exact time and location.\n6. Keep Registration Certificate (RC), insurance policy, and key details handy.",
+    "punishment": "Offence registered under BNS Section 303(2) / Section 305.",
+    "keywords": ["bike stolen", "car stolen", "scooter stolen", "vehicle theft", "what to do if bike stolen", "stolen vehicle insurance"],
+    "source_url": "https://mparivahan.gov.in"
+  },
+  {
+    "id": "proc_mobile_theft",
+    "act": "Department of Telecommunications & Police Protocol",
+    "section": "CEIR Portal & Lost Mobile Action Protocol",
+    "title": "What To Do If Your Mobile Phone Is Stolen or Lost",
+    "category": "Practical Step-by-Step Guidance",
+    "description": "Recommended steps upon mobile phone theft/loss:\n1. Block SIM card immediately by contacting your telecom operator.\n2. File a Lost Report / FIR at police station or online portal.\n3. Visit CEIR Portal (ceir.gov.in) to block your phone's IMEI number across India.\n4. Change passwords of linked bank apps, UPI, and email accounts.\n5. Keep IMEI number (from invoice/box) and FIR copy for blocking.",
+    "punishment": "Offence registered under BNS Section 303(2) and IT Act Section 66C/66D if misused.",
+    "keywords": ["phone stolen", "mobile lost", "phone stolen what to do", "ceir portal", "imei block", "stolen mobile"],
+    "source_url": "https://ceir.gov.in"
+  },
+  {
+    "id": "proc_cyber_scam",
+    "act": "Indian Cyber Crime Coordination Centre (I4C)",
+    "section": "Cyber Crime Evidence & Reporting Checklist",
+    "title": "Evidence Preservation Checklist After Cyber Fraud / Scam",
+    "category": "Evidence Checklist",
+    "description": "Recommended steps after online scam:\n1. Call 1930 immediately to log transaction details and attempt bank freeze.\n2. File online report at cybercrime.gov.in.\n3. Preserve all evidence: bank transaction SMS/statements, UPI transaction IDs, screenshots of chat/profile, fraudulent email headers, and caller phone numbers.\n4. Do NOT delete WhatsApp messages or SMS.\n5. File digital FIR or visit local Cyber Police Station with evidence copy.",
+    "punishment": "Offence under IT Act Section 66D and BNS Section 318.",
+    "keywords": ["cyber fraud evidence", "online scam evidence", "what evidence to preserve", "upi fraud checklist", "cybercrime evidence"],
+    "source_url": "https://cybercrime.gov.in"
+  },
+  {
+    "id": "proc_fir_explanation",
+    "act": "Police & Legal Awareness Guidelines",
+    "section": "FIR Basics & Rights",
+    "title": "What Is An FIR & How Does The Process Work?",
+    "category": "Legal Awareness",
+    "description": "A First Information Report (FIR) is a written document prepared by police upon receiving information about a cognizable offence (Section 173 BNSS).\nKey rights:\n- You are entitled to a free copy of the FIR.\n- Zero FIR allows filing a complaint at ANY police station regardless of where the crime occurred; it is later transferred to the jurisdiction station.\n- Citizens can file digital complaints/FIRs on platforms like CrimePilot.",
+    "punishment": "Legal procedure governing criminal justice initiation.",
+    "keywords": ["what is fir", "fir process", "zero fir", "how fir works", "free copy fir", "who can file fir"],
+    "source_url": "https://ncrb.gov.in"
+  }
+]

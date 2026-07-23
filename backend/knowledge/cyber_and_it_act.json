@@ -1,0 +1,46 @@
+[
+  {
+    "id": "itact_66d",
+    "act": "Information Technology Act, 2000 (IT Act)",
+    "section": "Section 66D",
+    "title": "Punishment for Cheating by Personation using Computer Resource",
+    "category": "Cyber Crime",
+    "description": "Whoever by means of any communication device or computer resource cheats by personation (e.g. fake caller, impersonating bank official, fake social media profile, phishing scam).",
+    "punishment": "Imprisonment of either description for a term which may extend to 3 years and fine up to 1 lakh rupees.",
+    "keywords": ["cyber fraud", "online scam", "phishing", "fake bank call", "otp scam", "impersonation", "online cheating", "part time job scam", "investment scam"],
+    "source_url": "https://www.cybercrime.gov.in"
+  },
+  {
+    "id": "itact_66c",
+    "act": "Information Technology Act, 2000 (IT Act)",
+    "section": "Section 66C",
+    "title": "Punishment for Identity Theft",
+    "category": "Cyber Crime",
+    "description": "Whoever fraudulently or dishonestly makes use of the electronic signature, password or any other unique identification feature of any other person.",
+    "punishment": "Imprisonment of either description for a term which may extend to 3 years and fine up to 1 lakh rupees.",
+    "keywords": ["identity theft", "hacked account", "stolen password", "unauthorized access", "hacking", "social media hack"],
+    "source_url": "https://www.cybercrime.gov.in"
+  },
+  {
+    "id": "itact_66e",
+    "act": "Information Technology Act, 2000 (IT Act)",
+    "section": "Section 66E",
+    "title": "Punishment for Violation of Privacy",
+    "category": "Cyber Harassment & Privacy",
+    "description": "Whoever intentionally or knowingly captures, publishes or transmits the image of a private area of any person without consent, under circumstances violating privacy.",
+    "punishment": "Imprisonment up to 3 years or fine up to 2 lakh rupees, or both.",
+    "keywords": ["privacy violation", "private photos leak", "morphed photo", "unauthorized photo", "revenge porn", "voyeurism"],
+    "source_url": "https://www.cybercrime.gov.in"
+  },
+  {
+    "id": "cyber_1930",
+    "act": "National Cyber Crime Reporting Helpline (Govt of India)",
+    "section": "Helpline 1930 & cybercrime.gov.in",
+    "title": "Cyber Financial Fraud Immediate Action Procedure",
+    "category": "Cyber Helpline & Financial Freeze",
+    "description": "For financial cyber fraud, dial national helpline 1930 immediately within the 'Golden Hour' (first 2 to 3 hours). Reporting promptly enables law enforcement and nodal bank officers to block fraudulent transactions and freeze funds in beneficiary bank accounts before withdrawal.",
+    "punishment": "Immediate administrative lien/freeze on defrauded funds across banking channels.",
+    "keywords": ["cybercrime helpline", "1930", "report cybercrime", "freeze money", "online money lost", "upi fraud", "cybercrime portal", "golden hour fraud"],
+    "source_url": "https://www.cybercrime.gov.in"
+  }
+]

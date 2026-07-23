@@ -1,0 +1,123 @@
+[
+  {
+    "id": "bns_303",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 303",
+    "title": "Theft and Punishment for Theft",
+    "category": "Property Offences",
+    "description": "Whoever, intending to take dishonestly any movable property out of the possession of any person without that person's consent, moves that property in order to such taking, is said to commit theft.",
+    "punishment": "Imprisonment of either description for a term which may extend to 3 years, or with fine, or with both. In case of a second or subsequent conviction, rigorous imprisonment of not less than 1 year up to 5 years.",
+    "keywords": ["theft", "stolen", "steal", "stole", "bike stolen", "car stolen", "phone stolen", "bag stolen", "jewellery stolen"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_305",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 305",
+    "title": "Theft in Dwelling House, Means of Transportation, etc.",
+    "category": "Property Offences",
+    "description": "Whoever commits theft in any building, tent or vessel used as a human dwelling, or used for the custody of property, or in any means of transport used for the transport of passengers or goods.",
+    "punishment": "Imprisonment of either description for a term which may extend to 7 years, and shall also be liable to fine.",
+    "keywords": ["house theft", "burglary", "home theft", "train theft", "bus theft", "vehicle theft", "dwelling house"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_308",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 308",
+    "title": "Extortion",
+    "category": "Property Offences",
+    "description": "Whoever intentionally puts any person in fear of any injury to that person, or to any other, and thereby dishonestly induces the person so put in fear to deliver to any person any property or valuable security.",
+    "punishment": "Imprisonment of either description for a term which may extend to 7 years, or with fine, or with both.",
+    "keywords": ["extortion", "blackmail", "demand money", "threatening for money", "ransom", "extorting"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_309",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 309",
+    "title": "Robbery and Punishment for Robbery",
+    "category": "Property Offences",
+    "description": "In all robbery there is either theft or extortion. Theft is robbery if, in order to the committing of the theft, the offender voluntarily causes or attempts to cause to any person death or hurt or wrongful restraint, or fear of instant death or hurt.",
+    "punishment": "Rigorous imprisonment for a term which may extend to 10 years, and fine. If committed on the highway between sunset and sunrise, imprisonment up to 14 years.",
+    "keywords": ["robbery", "snatching", "forceful theft", "gunpoint theft", "knife theft", "mugging", "robbed"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_316",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 316",
+    "title": "Criminal Breach of Trust",
+    "category": "Financial Offences",
+    "description": "Whoever, being in any manner entrusted with property, or with any dominion over property, dishonestly misappropriates or converts to his own use that property.",
+    "punishment": "Imprisonment of either description for a term which may extend to 5 years, or with fine, or with both.",
+    "keywords": ["breach of trust", "misappropriation", "trusted money stolen", "company funds stolen", "embezzlement"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_318",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 318",
+    "title": "Cheating and Dishonestly Inducing Delivery of Property",
+    "category": "Financial & Cyber Fraud",
+    "description": "Whoever, by deceiving any person, fraudulently or dishonestly induces the person so deceived to deliver any property to any person. Includes online financial cheating, impersonation, and fraudulent schemes.",
+    "punishment": "Imprisonment of either description for a term which may extend to 7 years, and shall also be liable to fine.",
+    "keywords": ["cheating", "scam", "fraud", "online fraud", "money stolen online", "bank fraud", "fake promise", "cheated"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_336",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 336",
+    "title": "Forgery and Punishment for Forgery",
+    "category": "Document Offences",
+    "description": "Whoever makes any false document or false electronic record or part of a document or electronic record, with intent to cause damage or injury to the public or to any person, or to support any claim or title.",
+    "punishment": "Imprisonment of either description for a term which may extend to 2 years, or with fine, or with both. If for valuable security, up to 7 years.",
+    "keywords": ["forgery", "fake document", "forged signature", "fake certificate", "fake id", "fake agreement"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_115",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 115",
+    "title": "Voluntarily Causing Hurt",
+    "category": "Body Offences",
+    "description": "Whoever does any act with the intention of thereby causing hurt to any person, or with the knowledge that he is likely thereby to cause hurt to any person, and does thereby cause hurt to any person.",
+    "punishment": "Imprisonment of either description for a term which may extend to 1 year, or with fine which may extend to 10,000 rupees, or with both.",
+    "keywords": ["hurt", "assault", "physical fight", "beaten", "slapped", "physical attack", "injury"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_117",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 117",
+    "title": "Voluntarily Causing Grievous Hurt",
+    "category": "Body Offences",
+    "description": "Whoever voluntarily causes grievous hurt, including emasculation, permanent privation of sight or hearing, fracture of bones, or endangering life.",
+    "punishment": "Imprisonment of either description for a term which may extend to 7 years, and shall also be liable to fine.",
+    "keywords": ["grievous hurt", "bone fracture", "severe attack", "hospitalized assault", "serious injury"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_351",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 351",
+    "title": "Criminal Intimidation",
+    "category": "Public Peace & Safety",
+    "description": "Whoever threatens another with any injury to his person, reputation or property, or to the person or reputation of any one in whom that person is interested, with intent to cause alarm to that person.",
+    "punishment": "Imprisonment for a term which may extend to 2 years, or fine, or both. If threat is to cause death or grievous hurt, imprisonment up to 7 years.",
+    "keywords": ["threat", "threatening", "intimidate", "threatening photos", "private photos leak", "death threat", "blackmail threat"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  },
+  {
+    "id": "bns_78",
+    "act": "Bharatiya Nyaya Sanhita, 2023 (BNS)",
+    "section": "Section 78",
+    "title": "Stalking",
+    "category": "Women Safety & Cyber Harassment",
+    "description": "Any man who follows a woman and contacts, or attempts to contact such woman repeatedly despite a clear indication of disinterest, or monitors the use by a woman of the internet, email or any other form of electronic communication.",
+    "punishment": "On first conviction, imprisonment up to 3 years and fine; on second or subsequent conviction, imprisonment up to 5 years and fine.",
+    "keywords": ["stalking", "online stalking", "following woman", "cyber stalking", "unwanted messages", "harassment"],
+    "source_url": "https://www.mha.gov.in/en/common-acts-rules"
+  }
+]
