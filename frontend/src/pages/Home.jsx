@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 // Simple helper for count-up numbers from 0
 const CountUp = ({ end, duration = 1500 }) => {
@@ -24,6 +25,9 @@ const CountUp = ({ end, duration = 1500 }) => {
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+
+
   // State for interactive Map details panel
   const [selectedCity, setSelectedCity] = useState({
     name: 'Ahmedabad',

@@ -10,19 +10,35 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore session on load
-    const storedToken = localStorage.getItem('crimepilot_token');
-    const storedUser = localStorage.getItem('crimepilot_user');
-    const storedDetails = localStorage.getItem('crimepilot_details');
+    const restoreSession = async () => {
+      const storedToken = localStorage.getItem('crimepilot_token');
+      const storedUser = localStorage.getItem('crimepilot_user');
+      const storedDetails = localStorage.getItem('crimepilot_details');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-      if (storedDetails) {
-        setDetails(JSON.parse(storedDetails));
+      if (storedToken && storedUser) {
+        try {
+          // Verify token validity by calling a lightweight protected endpoint
+          await axiosInstance.get('/notifications');
+          
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+          if (storedDetails) {
+            setDetails(JSON.parse(storedDetails));
+          }
+        } catch (error) {
+          console.error('Session validation failed on init:', error);
+          localStorage.removeItem('crimepilot_token');
+          localStorage.removeItem('crimepilot_user');
+          localStorage.removeItem('crimepilot_details');
+          setToken(null);
+          setUser(null);
+          setDetails(null);
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    restoreSession();
   }, []);
 
   const login = async (usernameOrEmail, password) => {
@@ -56,12 +72,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    const isCitizen = user?.role === 'citizen';
     setToken(null);
     setUser(null);
     setDetails(null);
     localStorage.removeItem('crimepilot_token');
     localStorage.removeItem('crimepilot_user');
     localStorage.removeItem('crimepilot_details');
+    
+    // Redirect cleanly to release state memory and ensure back-button security
+    if (isCitizen) {
+      window.location.href = '/citizen/login';
+    } else {
+      window.location.href = '/login';
+    }
   };
 
   const refreshProfile = async () => {
