@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import { AuthContext } from '../context/AuthContext';
@@ -8,6 +8,7 @@ import PageTransition from './PageTransition';
 const Layout = () => {
   const { user } = useContext(AuthContext);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
 
   const getPortalClass = () => {
     if (!user) return '';
@@ -17,11 +18,13 @@ const Layout = () => {
     return 'theme-officer';
   };
 
+  const isPublicPath = ['/', '/about', '/contact', '/overview'].includes(location.pathname);
+
   return (
     <div className={getPortalClass()} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0F1420', color: '#f8fafc' }}>
       <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 64px)' }}>
-        {user && <Sidebar isOpen={sidebarOpen} />}
+        {user && !isPublicPath && <Sidebar isOpen={sidebarOpen} />}
         <main style={{
           flex: 1,
           padding: '24px',

@@ -20,6 +20,7 @@ const victimRoutes       = require('./routes/victimRoutes');
 const evidenceRoutes     = require('./routes/evidenceRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const dashboardRoutes    = require('./routes/dashboardRoutes');
+const aiRoutes           = require('./routes/aiRoutes');
 
 const { getCategorySections } = require('./controllers/adminController');
 const { protect } = require('./middleware/authMiddleware');
@@ -45,6 +46,7 @@ app.use('/api/victims',       victimRoutes);
 app.use('/api/evidence',      evidenceRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard',     dashboardRoutes);
+app.use('/api/ai',            aiRoutes);
 
 app.get('/api/crime-categories/:id/sections', protect, getCategorySections);
 

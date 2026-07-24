@@ -31,9 +31,18 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem('crimepilot_user');
       localStorage.removeItem('crimepilot_details');
       
+      const pathname = window.location.pathname;
+      const isCitizenRoute = pathname.startsWith('/citizen');
+      
       // Redirect to login only if not already on the login page
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      if (isCitizenRoute) {
+        if (pathname !== '/citizen/login') {
+          window.location.href = '/citizen/login';
+        }
+      } else {
+        if (pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

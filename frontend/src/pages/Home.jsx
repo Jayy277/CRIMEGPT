@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import AskCrimePilotAI from '../components/AskCrimePilotAI';
 
 // Simple helper for count-up numbers from 0
 const CountUp = ({ end, duration = 1500 }) => {
@@ -24,6 +26,9 @@ const CountUp = ({ end, duration = 1500 }) => {
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+
+
   // State for interactive Map details panel
   const [selectedCity, setSelectedCity] = useState({
     name: 'Ahmedabad',
@@ -523,115 +528,8 @@ const Home = () => {
           SECTION 6: AI ASSISTANT CONSOLE
           ============================================== */}
       <section style={{ padding: '80px 20px', zIndex: 1, position: 'relative', backgroundColor: 'rgba(18, 27, 45, 0.2)' }}>
-        <div style={{ width: '800px', maxWidth: '100%', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <span style={{ fontSize: '11px', color: '#00D9FF', fontWeight: '800', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Neural Assistant</span>
-            <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#fff', marginTop: '8px' }}>ASK CRIMEPILOT AI</h2>
-          </div>
-
-          <div className="glass-panel" style={{ minHeight: '360px', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: '#0B1220' }}>
-            
-            {/* Messages box */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '280px', overflowY: 'auto', paddingRight: '10px' }}>
-              {chatMessages.map((msg, idx) => (
-                <div key={idx} style={{
-                  alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                  backgroundColor: msg.sender === 'user' ? 'rgba(0, 217, 255, 0.08)' : '#121B2D',
-                  border: `1px solid ${msg.sender === 'user' ? '#00D9FF' : 'rgba(0, 217, 255, 0.15)'}`,
-                  borderRadius: '10px',
-                  padding: '10px 14px',
-                  maxWidth: '85%',
-                  fontSize: '13px',
-                  textAlign: 'left',
-                  whiteSpace: 'pre-line',
-                  lineHeight: '1.4'
-                }}>
-                  <strong>{msg.sender === 'user' ? 'User Controller' : 'CrimePilot AI'}:</strong>
-                  <div style={{ marginTop: '4px', color: '#e2e8f0' }}>{msg.text}</div>
-                </div>
-              ))}
-              {isTyping && (
-                <div style={{ alignSelf: 'flex-start', color: '#9AA4B2', fontSize: '12px', fontStyle: 'italic' }}>
-                  CrimePilot Neural Core typing...
-                </div>
-              )}
-            </div>
-
-            {/* Input field and pre-configured queries */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', color: '#9AA4B2', alignSelf: 'center' }}>QUICK QUERIES:</span>
-                <button
-                  type="button"
-                  onClick={() => handleAskAI('What crime is increasing in Ahmedabad?')}
-                  style={{
-                    background: 'rgba(0, 217, 255, 0.05)',
-                    border: '1px solid rgba(0, 217, 255, 0.2)',
-                    borderRadius: '6px',
-                    padding: '4px 10px',
-                    fontSize: '11px',
-                    color: '#FFF',
-                    cursor: 'pointer'
-                  }}
-                >
-                  📈 Ahmedabad Vehicle Theft
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAskAI('Show security reports for Mumbai region')}
-                  style={{
-                    background: 'rgba(0, 217, 255, 0.05)',
-                    border: '1px solid rgba(0, 217, 255, 0.2)',
-                    borderRadius: '6px',
-                    padding: '4px 10px',
-                    fontSize: '11px',
-                    color: '#FFF',
-                    cursor: 'pointer'
-                  }}
-                >
-                  🚢 Mumbai Port Anomaly
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <input
-                  type="text"
-                  placeholder="Ask CrimePilot AI database..."
-                  value={chatInput}
-                  onChange={e => setChatInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleAskAI(chatInput)}
-                  style={{
-                    flex: '1',
-                    backgroundColor: '#121B2D',
-                    border: '1px solid rgba(0, 217, 255, 0.2)',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    color: '#fff',
-                    outline: 'none',
-                    fontSize: '13px'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleAskAI(chatInput)}
-                  style={{
-                    backgroundColor: '#00D9FF',
-                    color: '#0B1220',
-                    fontWeight: 'bold',
-                    padding: '10px 20px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  QUERY
-                </button>
-              </div>
-            </div>
-
-          </div>
-
+        <div style={{ width: '880px', maxWidth: '100%', margin: '0 auto' }}>
+          <AskCrimePilotAI />
         </div>
       </section>
 

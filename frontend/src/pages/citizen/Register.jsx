@@ -189,17 +189,17 @@ const CitizenRegister = () => {
             {/* Credentials */}
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label style={{ display: 'block', fontSize: '10px', color: '#9AA4B2', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '6px' }}>Full Name</label>
-              <input type="text" className="form-control" value={name} onChange={e => setName(e.target.value)} required placeholder="John Doe" />
+              <input type="text" className="form-control" value={name} onChange={e => setName(e.target.value)} required placeholder="Enter Your Full Name" />
             </div>
 
             <div className="form-group">
               <label style={{ display: 'block', fontSize: '10px', color: '#9AA4B2', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '6px' }}>Email Address</label>
-              <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} required placeholder="john@example.com" />
+              <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} required placeholder="Enter email address" />
             </div>
 
             <div className="form-group">
               <label style={{ display: 'block', fontSize: '10px', color: '#9AA4B2', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '6px' }}>Mobile Number</label>
-              <input type="text" className="form-control" value={mobile} onChange={e => setMobile(e.target.value)} required placeholder="9876543210" />
+              <input type="text" className="form-control" value={mobile} onChange={e => setMobile(e.target.value)} required placeholder="Enter mobile number" />
             </div>
 
             <div className="form-group">
